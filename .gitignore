@@ -1,0 +1,8 @@
+private/*
+!private/.gitkeep
+terraform/terraform.tfstate*
+terraform/terraform.tfvars
+terraform/.terraform*
+wireguard/config/*
+wireguard/.env
+!wireguard/config/.gitkeep

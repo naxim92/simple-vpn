@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  wireguard:
+    image: linuxserver/wireguard
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${WG_TZ:-'Europe/Moscow'}
+      - SERVERURL=${WG_URL:-'localhost'}
+      - SERVERPORT=51820
+      - PEERS=${WG_CLIENS_AMOUNT:-10}
+      # - PEERDNS=auto #optional
+      # - INTERNAL_SUBNET=10.13.13.0 #optional
+      # - ALLOWEDIPS=0.0.0.0/0 #optional
+      # - LOG_CONFS=true #optional
+    volumes:
+      - ./config:/config:rw
+    ports:
+      - ${WG_PORT:-51820}:51820/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    # working_dir: /terraform
+    # entrypoint: sh
