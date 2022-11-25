@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script src="static/js/crypto-js.min.js"></script>
+<script src="static/js/users.js">
+</script>
+<div class="flex horizontal">
+    <div>
+        <p>All users:</p>
+        <div id="users-list" class="list">
+        </div>
+        <div class="flex" id="users-commands">
+            <button class="users-buttons" id="remove-user-button" disabled onclick="remove_user()">
+            <button class="users-buttons" id="add-user-button" onclick="add_user()">
+            <button class="users-buttons" id="commit-user-button" disabled onclick="commit_changes_user()">
+        </div>   
+    </div>
+    <div id="user-details">
+    </div>
+    <div class="splash" id="splash-new-password">
+        <div class="flex horizontal center-screen" id="div-new-password">
+            <input type="password" id="new-password" class="validation" placeholder="Password" required="" onkeyup="validateNewPass()">
+            <button id="fill-new-password" disabled onclick="fill_new_password()">OK</button>
+            <button id="cancel-fill-new-password" onclick="cancel_fill_new_password()">Cancel</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

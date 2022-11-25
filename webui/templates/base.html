@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Wireguard simple WebUI{% endblock %}</title>
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <div id="wrapper" class="flex vertical">
+        <div id="logo-wrapper" class="logo base wrapper">
+            <img src="static/wireguard.png" id="wireguard-logo" class="img logo">
+            <div class="filler"></div>
+            <div id="username-hello-wrapper" class="vertical flex">
+                <div class="filler"></div>
+                <div class="horizontal flex">
+                    <p id="auth_user" class="description">{{ 'Welcome, ' + username + '.' if username else '' }}</p>
+                    <a href="/logout" class="logout">Logout</a>
+                </div>
+            </div>
+        </div>
+        <div id="content-wrapper" class="flex horizontal">
+            <div id="menu" class="flex vertical">
+                <ul>
+                    <li><a href="/">VPN config</a></li>
+                    <!-- <li><a href="/test">Test</a></li> -->
+                    {% if role == 'admin' %}
+                    <li><a href="/users">Users</a></li>
+                    {% endif %}
+                    {% if role == 'admin' or role == 'instance_admin' %}
+                    <li><a href="/service">Service</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div id="content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+        <div id="footer">
+            {% block footer %}
+            <div class="line"></div>
+            <p>&copy; Copyright 2022 Naxim</p>
+            {% endblock %}
+        </div>
+    </div>
+    <script>
+const selector = '#menu ul li a'
+const elems = Array.from(document.querySelectorAll(selector))
+elems.forEach(e => e.classList.remove('active'))
+elems.forEach(e => {
+    if (e.pathname == location.pathname) {
+        e.classList.add('active')
+    }
+})
+    </script>
+</body>
+</html>

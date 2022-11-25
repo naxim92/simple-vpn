@@ -1,0 +1,20 @@
+{% extends "errors/error-base.html" %}
+
+{% block content %}
+<div class="error">
+    <div class="flex" id="div500">
+        <div>
+            <img id="img500" class="error-img" src="static/error.webp" />
+        </div>
+        <div>
+            <h1 id="header500" class="error-header">500 Server Error</h1>
+        </div>
+    </div>
+    <div id="detailes500">
+        <div id="detailes500-header">
+            <p>DETAILS</p>
+        </div>
+        <p id="detailes500-text">{{ detailes }}</p>
+    </div>
+</div>
+{% endblock %}
