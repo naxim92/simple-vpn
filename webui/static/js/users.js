@@ -1,5 +1,6 @@
-var selected_row = ''
+var selected_row = null
 var is_new_pass_valid = false
+var selection_options = ''
 requestConfigsList(getConfigsListResult)
 requestUserList(getUserListResult)
 
@@ -10,6 +11,7 @@ function continue_loading_page(part){
     const selector_ = '#users-list div.row'
     rows = document.querySelectorAll(selector_)
     rows.forEach(e => { e.addEventListener('click', (event) => {user_click(event)}) })
+    selected_row = null
   }
 }
 
@@ -39,15 +41,12 @@ async function requestUserList(callback) {
 async function getConfigsListResult(response) {
     var wireguard_configs = JSON.parse(response)
     users_list = document.getElementById('users-list')
-    var htmlDatalist = `<datalist class="userconfig" id="configs_data">
-      <option value="None"></option>
+    selection_options = `  <option value="None"></option>
       `
     wireguard_configs.forEach(peer => {
-      htmlDatalist += `  <option value="${peer}">${peer}</option>
+      selection_options += `  <option value="${peer}">${peer}</option>
       `
     })
-    htmlDatalist += `</datalist>`
-    users_list.parentNode.innerHTML += htmlDatalist
     continue_loading_page(2)
 }
 
@@ -62,7 +61,10 @@ function getUserListResult(response) {
           </div>
           <p class="username bellowrow">${element.name}</p>
           <p class="userrole bellowrow">${element.role}</p>
-          <input list="configs_data" class="userconfig bellowrow" onChange="selectConfig()">
+          <select class="userconfig bellowrow" onChange="selectConfig(this)">
+          `
+      htmlRow += selection_options
+      htmlRow += `</select>
           <p class="userconfig hidden">${element.config}</p>
           <p class="usernewpass hidden"></p>
           <button class="password-buttons" id="fill-new-password-button" onclick="fill_new_pass()">New password</button>
@@ -87,33 +89,12 @@ function getUserListResult(response) {
     continue_loading_page(3)
 }
 
-function user_click(e){
-  resetSelection()
-  users_list = document.getElementById('users-list')
-    
-  // Mark selected
-  users_list.childNodes.forEach(element => {
-    if(element.contains(e.target)) {
-      remove_user_button.disabled = false
-      element.childNodes[1].childNodes[1].classList.add('active')
-      selected_row = element.childNodes[1]
-
-      // You cannot remove yourself
-      welcome_message = document.getElementById('auth_user').textContent
-      selected_user_name = element.childNodes[1].childNodes[3].textContent
-      if(welcome_message == 'Welcome, ' + selected_user_name + '.') {
-        remove_user_button.disabled = true
-      }
-    }
-  })
-}
-
 async function remove_user() {
-  remove_user = selected_row.childNodes[3].textContent
+  remove_username = selected_row.childNodes[3].textContent
 
   const remove_user_request = new FormData()
   remove_user_request.append('action', 'remove_user')
-  remove_user_request.append('username', remove_user)
+  remove_user_request.append('username', remove_username)
   await fetch('users', {
     redirect: 'manual',
     method: 'POST',
@@ -155,11 +136,75 @@ async function commit_changes_user(){
   }).then(function(response){ refreshUserList(response); })
 }
 
-function selectConfig(){
-  if(selected_row.childNodes[7].value != selected_row.childNodes[9].textContent) {
+function user_click(e){
+  var past_selected_row = selected_row
+  users_list = document.getElementById('users-list')
+
+  // Find out selected row
+  users_list.childNodes.forEach(element => {
+    if(element.contains(e.target)) {
+      selected_row = element.childNodes[1]
+      }
+    })
+
+  // If there is no change
+  if(past_selected_row != null) {
+    past_selected_row_username = past_selected_row.childNodes[3].textContent
+    selected_row_username = selected_row.childNodes[3].textContent
+    if(past_selected_row_username  == selected_row_username) {
+      console.log('No change')
+      return
+    }
+  }
+
+  // If selected row changed
+  // Reset selection marks from all users list
+  resetSelection()
+  // Mark selected row with selection mark
+  selected_row.childNodes[1].classList.add('active')
+  // You cannot remove yourself
+  // So if current user is selected user -
+  // make the remove user button disabled
+  welcome_message = document.getElementById('auth_user').textContent
+  selected_user_name = selected_row.childNodes[3].textContent
+  if(welcome_message == 'Welcome, ' + selected_user_name + '.') {
+    remove_user_button.disabled = true
+  }
+  else {
+    remove_user_button.disabled = false
+  }
+}
+
+function selectConfig(e){
+  if(selected_row.childNodes[7].value !== selected_row.childNodes[9].textContent) {
     commit_user_button = document.getElementById('commit-user-button')
     commit_user_button.disabled = false
   }
+}
+
+function resetSelection() {
+  // Disable commit changes button
+  commit_user_button = document.getElementById('commit-user-button')
+  commit_user_button.disabled = true
+
+  remove_user_button = document.getElementById('remove-user-button')
+  // Reset selection
+  users_list = document.getElementById('users-list')
+  users_list.childNodes.forEach(element => {
+    if (element.nodeName == "#text") {
+      return;
+    }
+    if(selected_row != '') {
+      current_row_username = element.childNodes[1].childNodes[3].textContent
+      selected_row_username = selected_row.childNodes[3].textContent
+      if(current_row_username == selected_row_username) { return }
+    }
+    element.childNodes[1].childNodes[11].value = ''
+    value = element.childNodes[1].childNodes[9].textContent
+    element.childNodes[1].childNodes[7].value = value
+    element.childNodes[1].childNodes[1].classList.remove('active')
+    remove_user_button.classList.remove('inactive')
+  })
 }
 
 function fill_new_pass() {
@@ -196,24 +241,6 @@ function validateNewPass() {
 
 function encryptPass(plain_password) {
   return CryptoJS.SHA256(plain_password).toString()
-}
-
-function resetSelection() {
-  commit_user_button = document.getElementById('commit-user-button')
-  commit_user_button.disabled = true
-  users_list = document.getElementById('users-list')
-  remove_user_button = document.getElementById('remove-user-button')
-  // Reset selection
-  users_list.childNodes.forEach(element => {
-    if (element.nodeName == "#text") {
-      return;
-    }
-    element.childNodes[1].childNodes[11].value = ''
-    value = element.childNodes[1].childNodes[9].textContent
-    element.childNodes[1].childNodes[7].value = value
-    element.childNodes[1].childNodes[1].classList.remove('active')
-    remove_user_button.classList.remove('inactive')
-  })
 }
 
 function cancel_fill_new_password() {
