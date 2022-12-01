@@ -58,7 +58,7 @@ input:valid {
     margin: 0px;
 }
 
-#login-error-text {
+.error-text {
     font-size: 12px;
     color: red;
     display: block;
@@ -134,6 +134,10 @@ input:valid {
     flex-direction: column;
 }
 
+.flex-start {
+    align-items: flex-start;
+}
+
 #footer {
     text-align: center;
     flex-grow: 1;
@@ -165,6 +169,8 @@ input:valid {
 
 #content {
     padding: 7px;
+    padding-left: 30px;
+    padding-top: 30px;
     background-color: rgb(228, 232, 236);
     align-self: stretch;
     width: 100%;
@@ -217,42 +223,47 @@ input:valid {
     background: rgb(235, 240, 245);
     border: 1px solid;
     border-color: rgb(189, 195, 201);
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 16px repeat(4, 1fr);
     min-width: 300px;
+    max-width: 440px;
+    align-items: baseline;
+    justify-items: start;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .row {
-    border: 1px solid;
-    border-color: rgb(189, 195, 201);
-    padding-left: 10px;
-    padding-right: 10px;
     font-size: 14px;
-    flex-grow: 1;
-    line-height: 2px;
-    text-align: left;
-    display: block;
-    vertical-align: middle;
+    display: contents;
+}
+
+.listitem {
+    width: 100%;
+    margin-inline: 0px;
+    margin-block: 4px;
+    line-height: normal;    
 }
 
 .username {
-    padding-left: 10px;
-    width: 33.3%;
+/*    margin-left: 10px;*/
 }
 
 .userrole {
+/*    margin-left: 10px;*/
     padding-left: 10px;
-    width: 33%;
+    padding-right: 10px;
 }
 
 .userconfig {
-    padding-left: 10px;
-    width: 33.3%;
+    padding-left: 4px;
+    min-width: 60px;
+    max-width: fit-content;
 }
 
 .userselected {
     width: 1px;
-    height: 1px; 
+    height: 1px;
     border: 2px solid;
     border-radius: 110%;
     border-color: rgb(136, 23, 25);
@@ -262,6 +273,8 @@ input:valid {
 }
 
 .userselected.active {
+    width: 1px;
+    height: 1px;
     visibility: initial;
 }
 
@@ -307,10 +320,11 @@ input:valid {
     visibility: hidden;
     width: 0px;
     height: 0px;
+    display: none;
 }
 
 .password-buttons {
-    width: 150px;
+    width: 140px;
 }
 
 .splash {
@@ -345,4 +359,11 @@ input:valid {
 
 #fill-new-password, #cancel-fill-new-password {
     margin-left: 15px;
+}
+
+#user-create-wrapper {
+    margin-left: 30px;
+    border-left: 2px solid;
+    border-color: rgb(189, 195, 201);
+    padding-left: 30px;
 }

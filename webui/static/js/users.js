@@ -55,23 +55,21 @@ function getUserListResult(response) {
     htmlList = document.getElementById("users-list")
     users.forEach(element => {
       var htmlRow = `
-      <div class="row">
-        <div class="flex horizontal bellowrow">
-          <div class="userselected bellowrow">
+        <div class="row">
+          <div class="userselected listitem">
           </div>
-          <p class="username bellowrow">${element.name}</p>
-          <p class="userrole bellowrow">${element.role}</p>
-          <select class="userconfig bellowrow" onChange="selectConfig(this)">
+          <p class="username listitem">${element.name}</p>
+          <p class="userrole listitem">${element.role}</p>
+          <select class="userconfig listitem" onChange="selectConfig(this)">
           `
       htmlRow += selection_options
       htmlRow += `</select>
-          <p class="userconfig hidden">${element.config}</p>
+          <p class="userdefaultconfig hidden">${element.config}</p>
           <p class="usernewpass hidden"></p>
-          <button class="password-buttons" id="fill-new-password-button" onclick="fill_new_pass()">New password</button>
+          <button class="password-buttons listitem" onclick="fill_new_pass()">New password</button>
           `
-      htmlRow +=`
-      </div>
-      `
+
+      htmlList.innerHTML += `</div>`
       htmlList.innerHTML += htmlRow
     });
 
@@ -79,12 +77,12 @@ function getUserListResult(response) {
       if (element.nodeName == "#text") {
         return;
       }
-      value = element.childNodes[1].childNodes[9].textContent
+      value = element.childNodes[9].textContent
       if (value == 'null') {
-        element.childNodes[1].childNodes[9].textContent = 'None'
+        element.childNodes[9].textContent = 'None'
         value = 'None'
       }
-      element.childNodes[1].childNodes[7].value = value
+      element.childNodes[7].value = value
     })
     continue_loading_page(3)
 }
@@ -143,7 +141,7 @@ function user_click(e){
   // Find out selected row
   users_list.childNodes.forEach(element => {
     if(element.contains(e.target)) {
-      selected_row = element.childNodes[1]
+      selected_row = element
       }
     })
 
@@ -152,7 +150,6 @@ function user_click(e){
     past_selected_row_username = past_selected_row.childNodes[3].textContent
     selected_row_username = selected_row.childNodes[3].textContent
     if(past_selected_row_username  == selected_row_username) {
-      console.log('No change')
       return
     }
   }
@@ -195,14 +192,14 @@ function resetSelection() {
       return;
     }
     if(selected_row != '') {
-      current_row_username = element.childNodes[1].childNodes[3].textContent
+      current_row_username = element.childNodes[3].textContent
       selected_row_username = selected_row.childNodes[3].textContent
       if(current_row_username == selected_row_username) { return }
     }
-    element.childNodes[1].childNodes[11].value = ''
-    value = element.childNodes[1].childNodes[9].textContent
-    element.childNodes[1].childNodes[7].value = value
-    element.childNodes[1].childNodes[1].classList.remove('active')
+    element.childNodes[11].value = ''
+    value = element.childNodes[9].textContent
+    element.childNodes[7].value = value
+    element.childNodes[1].classList.remove('active')
     remove_user_button.classList.remove('inactive')
   })
 }

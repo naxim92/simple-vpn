@@ -6,7 +6,7 @@
 </script>
 <div class="flex horizontal">
     <div>
-        <p>All users:</p>
+        <p>Users</p>
         <div id="users-list" class="list">
         </div>
         <div class="flex" id="users-commands">
@@ -15,7 +15,22 @@
             <button class="users-buttons" id="commit-user-button" disabled onclick="commit_changes_user()">
         </div>   
     </div>
-    <div id="user-details">
+    <div id="user-create-wrapper">
+        <p>Create user</p>
+        <form action="users" method="post" id="users-create-form" onsubmit="addUser()">
+            <div class="flex vertical">
+                <p>
+                    <input type="text" id="create-username" name="username" placeholder="Username"><i class="validation"><span></span><span></span></i>
+                </p>
+                <button class="password-buttons" onclick="fill_new_pass('newUser')">New password</button>
+                <p id="user-create-error-wrapper">
+                      <label id="user-create-error-text"/>
+                </p>
+                <p>
+                    <input type="submit" id="user-create-button" value="Add user">
+                </p>
+            </div>
+        </form>
     </div>
     <div class="splash" id="splash-new-password">
         <div class="flex horizontal center-screen" id="div-new-password">
