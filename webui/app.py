@@ -343,8 +343,10 @@ def try_config_app():
 
 
 def try_create_user(username, role, password=None, password_hash=None):
-    if password is None and password_hash is None:
+    if (password is None and password_hash is None) or (password == '' and password_hash == ''):
         CreateUserException('Get me a password!')
+    if (username is None or username == '') or (role is None or role == ''):
+        CreateUserException('Bad request!')
     try:
         sqlite_connection = sqlite3.connect(webui_db_path)
         cursor = sqlite_connection.cursor()

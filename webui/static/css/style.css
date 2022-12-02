@@ -366,4 +366,24 @@ input:valid {
     border-left: 2px solid;
     border-color: rgb(189, 195, 201);
     padding-left: 30px;
+    width: 160px;
+    height: 203px
+}
+
+#user-create-header {
+    margin-bottom: 15px;
+}
+
+#user-create-header.disable {
+    color: rgba(16, 16, 16, 0.3);
+}
+
+#user-create-error-wrapper {
+    min-height: 0px;
+    max-height: fit-content;
+    margin: 0px;
+}
+
+[id^='user-create-'] {
+    margin-bottom: 10px;
 }

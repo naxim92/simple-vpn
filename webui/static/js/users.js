@@ -1,22 +1,26 @@
 var selected_row = null
 var is_new_pass_valid = false
 var selection_options = ''
-requestConfigsList(getConfigsListResult)
-requestUserList(getUserListResult)
+requestData(getRolesListResult, 'list_roles')
+requestData(getConfigsListResult, 'list_configs')
+requestData(getUserListResult, 'list_users')
 
 function continue_loading_page(part){
   if(part === 2) {
   }
-  else {
+  else if(part === 3) {
     const selector_ = '#users-list div.row'
     rows = document.querySelectorAll(selector_)
     rows.forEach(e => { e.addEventListener('click', (event) => {user_click(event)}) })
     selected_row = null
   }
+  else if(part === 4) {
+    manageCreateUserLayout('disable')
+  }
 }
 
-async function requestConfigsList(callback) {
-  await fetch('users?list_configs', {
+async function requestData(callback, action) {
+  await fetch('users?' + action, {
     method: 'GET',
   }).then(function(response) {
     if (response.status == 200) {
@@ -26,17 +30,18 @@ async function requestConfigsList(callback) {
   }).then(function(data){ callback(data); })
 }
 
-async function requestUserList(callback) {
-  await fetch('users?list_users', {
-    method: 'GET',
-  }).then(function(response) {
-    if (response.status == 200) {
-      return response.text();
-    }
-    else { return ''; }
-  }).then(function(data){ callback(data); })
-}
+async function getRolesListResult(response) {
+    var roles = JSON.parse(response)
+    roles_list = document.getElementById('user-create-roles-list')
+    roles_list_options = ''
 
+    roles.forEach(role => {
+      roles_list_options += `  <option value="${role}">${role}</option>
+      `
+    })
+    roles_list.innerHTML = roles_list_options
+    continue_loading_page(4)
+}
 
 async function getConfigsListResult(response) {
     var wireguard_configs = JSON.parse(response)
@@ -66,9 +71,8 @@ function getUserListResult(response) {
       htmlRow += `</select>
           <p class="userdefaultconfig hidden">${element.config}</p>
           <p class="usernewpass hidden"></p>
-          <button class="password-buttons listitem" onclick="fill_new_pass()">New password</button>
+          <button class="password-buttons listitem" onclick="fill_new_pass('change')">New password</button>
           `
-
       htmlList.innerHTML += `</div>`
       htmlList.innerHTML += htmlRow
     });
@@ -105,13 +109,40 @@ function refreshUserList(response) {
   commit_user_button.disabled = true
   users_list = document.getElementById('users-list')
   users_list.innerHTML = ''
-  requestUserList(getUserListResult)
+  manageCreateUserLayout('disable')
+  resetSelection()
+  requestData(getUserListResult, 'list_users')
 }
 
 function add_user(e){
   users_list = document.getElementById('users-list')
   users_list.childNodes.forEach(element => {
   })
+  manageCreateUserLayout('enable')
+}
+
+async function createUser(){
+  create_user_request = new FormData()
+  create_user_request.append('action', 'add_user')
+  username = document.getElementById('user-create-username').value
+  create_user_request.append('username', username)
+  password = document.getElementById('create-user-new-pass').value
+  if(hash != '') {
+    create_user_request.append('hash', password)
+  }
+  role = document.getElementById('user-create-roles-list').value
+  if(role != '') {
+    create_user_request.append('role', role)
+  }
+  await fetch('users', {
+    redirect: 'manual',
+    method: 'POST',
+    body: create_user_request,
+  }).then(function(response){ refreshUserList(response); })
+  username = null
+  password = null
+  hash = null
+  role = null
 }
 
 async function commit_changes_user(){
@@ -184,7 +215,6 @@ function resetSelection() {
   commit_user_button = document.getElementById('commit-user-button')
   commit_user_button.disabled = true
 
-  remove_user_button = document.getElementById('remove-user-button')
   // Reset selection
   users_list = document.getElementById('users-list')
   users_list.childNodes.forEach(element => {
@@ -200,25 +230,39 @@ function resetSelection() {
     value = element.childNodes[9].textContent
     element.childNodes[7].value = value
     element.childNodes[1].classList.remove('active')
-    remove_user_button.classList.remove('inactive')
+    // remove_user_button.classList.remove('inactive')
   })
+  manageCreateUserLayout('disable')
+  remove_user_button = document.getElementById('remove-user-button')
+  remove_user_button.disabled = true
 }
 
-function fill_new_pass() {
+function fill_new_pass(action) {
   is_new_pass_valid = false
   document.getElementById('new-password').value = ''
   new_password_splash = document.getElementById('splash-new-password')
   new_password_splash.classList.add('active')
+
+  fill_new_password_button = document.getElementById('fill-new-password')
+  fill_new_password_button.onclick = null
+  fill_new_password_button.addEventListener('click', () => {fill_new_password(action)})
 }
 
-function fill_new_password() {
+function fill_new_password(action) {
   new_password_splash = document.getElementById('splash-new-password')
   new_password_splash.classList.remove('active')
   if(is_new_pass_valid) {
     hash = encryptPass(document.getElementById('new-password').value)
-    selected_row.childNodes[11].textContent = hash
-    commit_user_button = document.getElementById('commit-user-button')
-    commit_user_button.disabled = false
+
+    if(action === 'change') {
+      selected_row.childNodes[11].textContent = hash
+      commit_user_button = document.getElementById('commit-user-button')
+      commit_user_button.disabled = false
+    }
+    else if(action === 'newUser') {
+      document.getElementById('create-user-new-pass').value = hash
+      enableAddUserButton()
+    }
   }
   document.getElementById('new-password').value = ''
 }
@@ -236,6 +280,33 @@ function validateNewPass() {
   }
 }
 
+function validateNewUsername() {
+  newUsername = document.getElementById('user-create-username').value
+  users_list = document.getElementById('users-list')
+  user_create_button = document.getElementById('user-create-button')
+  error_label = document.getElementById('user-create-error-text')
+  bad_username = false
+  users_list.childNodes.forEach(element => {
+      if (element.nodeName == "#text") {
+        return;
+      }
+      if (newUsername.length == 0) {
+        error_label.textContent = 'Username is too small!'
+        user_create_button.disabled = true
+        bad_username = true
+      }
+      if (newUsername === element.childNodes[3].textContent) {
+        error_label.textContent = 'Username is not unique!'
+        enableAddUserButton()
+        bad_username = true
+      }
+  })
+  if (!bad_username){
+    error_label.textContent = ''
+    enableAddUserButton()
+  }
+}
+
 function encryptPass(plain_password) {
   return CryptoJS.SHA256(plain_password).toString()
 }
@@ -243,4 +314,46 @@ function encryptPass(plain_password) {
 function cancel_fill_new_password() {
   new_password_splash = document.getElementById('splash-new-password')
   new_password_splash.classList.remove('active')
+}
+
+function manageCreateUserLayout(action) {
+  if (action === 'disable') {
+    document.getElementById('user-create-button').disabled = true
+    document.getElementById('user-create-username').disabled = true
+    document.getElementById('user-create-roles-list').disabled = true
+    document.getElementById('user-create-password').disabled = true
+
+    document.getElementById('user-create-username').value = ''
+    document.getElementById('user-create-roles-list').value = 'user'
+    document.getElementById('create-user-new-pass').value = ''
+    document.getElementById('user-create-error-text').textContent = ''
+    document.getElementById('user-create-header').classList.add('disable')
+  }
+  else if (action === 'enable') {
+    document.getElementById('user-create-username').disabled = false
+    document.getElementById('user-create-roles-list').disabled = false
+    document.getElementById('user-create-password').disabled = false
+
+    document.getElementById('user-create-username').value = ''
+    document.getElementById('create-user-new-pass').value = ''
+    document.getElementById('user-create-error-text').textContent = ''
+    document.getElementById('user-create-header').classList.remove('disable')
+  }
+}
+
+function enableAddUserButton() {
+  username = document.getElementById('user-create-username').value
+  password = document.getElementById('create-user-new-pass').value
+  role = document.getElementById('user-create-roles-list').value
+  error = document.getElementById('user-create-error-text').textContent
+  if (username == '' || password == '' || role == '' || error != '') {
+    document.getElementById('user-create-button').disabled = true
+  }
+  else {
+    document.getElementById('user-create-button').disabled = false
+  }
+  username = null
+  password = null
+  role = null
+  error = null
 }

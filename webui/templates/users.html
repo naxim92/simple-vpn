@@ -16,26 +16,23 @@
         </div>   
     </div>
     <div id="user-create-wrapper">
-        <p>Create user</p>
-        <form action="users" method="post" id="users-create-form" onsubmit="addUser()">
-            <div class="flex vertical">
-                <p>
-                    <input type="text" id="create-username" name="username" placeholder="Username"><i class="validation"><span></span><span></span></i>
-                </p>
-                <button class="password-buttons" onclick="fill_new_pass('newUser')">New password</button>
-                <p id="user-create-error-wrapper">
-                      <label id="user-create-error-text"/>
-                </p>
-                <p>
-                    <input type="submit" id="user-create-button" value="Add user">
-                </p>
-            </div>
-        </form>
+        <p id="user-create-header" >Create user</p>
+        <div class="flex vertical">
+            <input type="text" id="user-create-username" name="username" placeholder="Username" onkeyup="validateNewUsername()"><i class="validation"><span></span><span></span></i>
+            <p id="user-create-error-wrapper">
+                  <label id="user-create-error-text" class="error-text" />
+            </p>
+            <select id="user-create-roles-list" class="userroles" onChange="">
+            </select>
+            <button id="user-create-password" class="password-buttons" onclick="fill_new_pass('newUser')">New password</button>
+            <p class="hidden" id="create-user-new-pass"></p>
+            <button id="user-create-button" disabled onclick="createUser()">Add user</button>
+        </div>
     </div>
     <div class="splash" id="splash-new-password">
         <div class="flex horizontal center-screen" id="div-new-password">
             <input type="password" id="new-password" class="validation" placeholder="Password" required="" onkeyup="validateNewPass()">
-            <button id="fill-new-password" disabled onclick="fill_new_password()">OK</button>
+            <button id="fill-new-password" disabled>OK</button>
             <button id="cancel-fill-new-password" onclick="cancel_fill_new_password()">Cancel</button>
         </div>
     </div>
