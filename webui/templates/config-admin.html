@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script src="static/js/config-admin.js"></script>
+<div id="config-wrapper" class="flex horizontal">
+    <div>
+        <p id="config-header">Wireguard config</p>
+        <img src="" id="config-qr">
+    </div>
+    <div class="filler">
+    </div>
+    <div class="flex vertical">
+        <p id="users-list-header">Users</p>
+        <select id="users-list" onChange="changedSelectedUser()">
+        </select>
+    </div>
+</div>
+{% endblock %}

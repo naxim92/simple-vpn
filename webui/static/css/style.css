@@ -387,3 +387,12 @@ input:valid {
 [id^='user-create-'] {
     margin-bottom: 10px;
 }
+
+#config-wrapper {
+    padding-left: 30px;
+    padding-right: 40px;
+}
+
+#config-header {
+    min-width: 210px;
+}

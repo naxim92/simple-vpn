@@ -4,6 +4,7 @@ from jinja2.exceptions import TemplateNotFound
 from prometheus_flask_exporter import PrometheusMetrics
 from os import urandom
 from os import walk
+from os.path import join
 from base64 import b64encode
 from os.path import dirname, abspath
 from hashlib import sha256
@@ -33,6 +34,7 @@ default_password = 'admin'
 default_admin_role = Roles.ADMIN.value
 wireguard_dir = '../wireguard/config'
 wireguard_config_pattern = 'peer'
+wireguard_config_qr_pattern = 'peer[0-9]+\.png'
 
 app = Flask(__name__)
 sessionKey = None
@@ -94,11 +96,48 @@ def favicon():
 def root():
     if not app.authenticated:
         return redirect('/login')
+    elif app.auth_role == 'admin':
+        get_config_opt = request.args.get('get_user_config')
+        username_opt = request.args.get('username')
+        if request.method == 'GET':
+            if get_config_opt is not None and \
+                    username_opt is not None and \
+                    username_opt != '':
+                qr_user_config = None
+                try:
+                    qr_user_config = try_get_user_config(username_opt)
+                except Exception as error:
+                    abort(500, error)
+                if qr_user_config is None:
+                    abort(404, 'There is no user\'s config')
+                else:
+                    return send_file(qr_user_config, mimetype='image/png')
+            return render_template(
+                "config-admin.html",
+                username=app.auth_username,
+                role=app.auth_role)
+        else:
+            abort(400)
     else:
-        return render_template(
-            "home.html",
-            username=app.auth_username,
-            role=app.auth_role)
+        get_config_opt = request.args.get('get_user_config')
+        if request.method == 'GET':
+            if get_config_opt is not None:
+                qr_user_config = None
+                try:
+                    qr_user_config = try_get_user_config(app.auth_username)
+                except Exception as error:
+                    abort(500, error)
+                if qr_user_config is None:
+                    abort(404, 'There is no user\'s config')
+                else:
+                    return send_file(qr_user_config, mimetype='image/png')
+            else:
+                return render_template(
+                    "config-user.html",
+                    username=app.auth_username,
+                    role=app.auth_role)
+        else:
+            abort(400)
 
 
 @app.route("/test")
@@ -155,16 +194,13 @@ def users():
         if action == 'change_user':
             user_config = request.form.get('config', None)
             new_pass_hash = request.form.get('hash', None)
-            try_change_user(
-                username=username,
-                config=user_config,
-                password_hash=new_pass_hash)
-            # try:
-            #     try_change_user(
-            #         config=user_config,
-            #         password_hash=new_pass_hash)
-            # except Exception as error:
-            #     abort(500, error)
+            try:
+                try_change_user(
+                    username=username,
+                    config=user_config,
+                    password_hash=new_pass_hash)
+            except Exception as error:
+                abort(500, error)
     return render_template(
         "users.html",
         username=app.auth_username,
@@ -290,6 +326,37 @@ def list_wireguard_configs():
     return peers_sorted
 
 
+def try_get_user_config(username):
+    sql_config_name = None
+    try:
+        sqlite_connection = sqlite3.connect(webui_db_path)
+        cursor = sqlite_connection.cursor()
+        sql = """
+        select config from security
+        where username=:username
+        """
+        cursor.execute(sql,
+                       {"username": username})
+        user_data = cursor.fetchone()
+        sql_config_name = user_data[0]
+    except Exception as error:
+        abort(500, error)
+    finally:
+        cursor.close()
+        sqlite_connection.close()
+
+    if sql_config_name is None:
+        return None
+
+    for root, dirs, files in walk(
+            join(wireguard_dir, sql_config_name),
+            topdown=False):
+        for file in files:
+            if re.match(wireguard_config_qr_pattern, file):
+                return join(root, file)
+    return None
+
+
 def auth():
     username = request.form.get('username', None)
     password = request.form.get('password', None)
@@ -343,7 +410,8 @@ def try_config_app():
 
 
 def try_create_user(username, role, password=None, password_hash=None):
-    if (password is None and password_hash is None) or (password == '' and password_hash == ''):
+    if (password is None and password_hash is None) or \
+            (password == '' and password_hash == ''):
         CreateUserException('Get me a password!')
     if (username is None or username == '') or (role is None or role == ''):
         CreateUserException('Bad request!')
