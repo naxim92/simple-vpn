@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  webuiapp:
+    image: tiangolo/uwsgi-nginx:${VER_PY:-python3.9}
+    container_name: wireguard_webuiapp
+    volumes:
+      - ../../webui:/app:r
+      - /app/static/design-src
+      - webuiapp_pycache1:/app/.cache
+      - webuiapp_pycache2:/app/__pycache__
+      - webuiapp_data:/app/data/
+      - webuiapp_pycache:/usr/local/lib/${VER_PY:-python3.9}/site-packages
+    environment:
+      - UWSGI_CHEAPER ${UWSGI_CHEAPER:-1}
+      - UWSGI_PROCESSES ${UWSGI_PROCESSES:-4}
+  balancer:
+    image: nginx:mainline-alpine-slim
+    container_name: wireguard_balancer
+    environment:
+      - NGINX_HOST=${NGINX_HOST:-wireguard.local}
+      - NGINX_DOCKER_HOST_IP=${NGINX_DOCKER_HOST_IP:-'192.168.1.1'}
+    volumes:
+      - ../../nginx:/etc/nginx/
+      - ../../webui/static:/app:r
+      - /app/design-src
+    ports:
+      - 5010:80
+      - 5011:443
+
+volumes:
+  webuiapp_data:
+  webuiapp_pycache: 
+  webuiapp_pycache1:
+  webuiapp_pycache2:

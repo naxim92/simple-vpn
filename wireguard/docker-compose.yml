@@ -10,7 +10,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${WG_TZ:-'Europe/Moscow'}
-      - SERVERURL=${WG_URL:-'localhost'}
+      - SERVERURL=${WG_URL:-'wireguard.local'}
       - SERVERPORT=51820
       - PEERS=${WG_CLIENS_AMOUNT:-10}
       # - PEERDNS=auto #optional
