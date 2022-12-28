@@ -6,3 +6,9 @@ terraform/.terraform*
 wireguard/config/*
 wireguard/.env
 !wireguard/config/.gitkeep
+webui/__pycache__
+webui/data/*
+webui/.cache
+webui/static/design-src/*
+!webui/data/.gitkeep
+docker/webui/.env

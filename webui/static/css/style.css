@@ -1,0 +1,398 @@
+html, body {
+    background-color: rgb(240, 244, 245);
+    font-family: Verdana,sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0 auto;
+    max-width: 1000px;
+}
+
+#wrapper {
+    background: rgb(240, 244, 245);
+    flex-flow: column;
+    min-height: 100vh;
+}
+
+/*input:invalid {
+    border-color: red;
+}
+input,
+input:valid {
+    border-color: rgb(45, 50, 51);
+}*/
+
+#login {
+    height: 200px;
+    width: 280px;
+    top: calc(40% - 90px);
+    left: calc(50% - 140px);
+    text-align: center;
+    border: 1px solid;
+    border-radius: 16px;
+    position: absolute;
+    box-shadow: 3px 3px 5px rgb(95, 107, 117);
+    background: rgb(237, 247, 250);
+}
+
+#login-header {
+/*    128, 185, 232*/
+/*    background: linear-gradient(rgb(32, 118, 189), rgb(148, 200, 242));*/
+    background: linear-gradient(rgb(32, 118, 189), rgb(188, 223, 235));
+    height: 45px;
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+    padding-top: 1%;
+    padding-bottom: 1%;
+    font-weight: bold;
+    font-size: 14px;
+    position: relative;
+    z-index: 0;
+}
+
+#login-button {
+    background-color: rgb(128, 185, 232);
+}
+
+#login-error-wrapper {
+    height: 11px;
+    margin: 0px;
+}
+
+.error-text {
+    font-size: 12px;
+    color: red;
+    display: block;
+}
+
+.flex {
+    display: flex;
+}
+
+.horizontal {
+    flex-direction: row;
+    align-items: baseline;
+}
+
+.error-img {
+    height: 50px;
+    padding: 20px;
+}
+
+#error-header {
+    margin-left: 10px;
+}
+
+#div500 {
+    margin: auto;
+    width: 450px;
+}
+
+#detailes500 {
+    margin: auto;
+    width: 800px;
+    min-height: 100px;
+    border: 2px solid;
+    border-color: rgb(194, 205, 209);
+    border-radius: 6px;
+    background: rgb(223, 233, 237);
+}
+
+#detailes500-header {
+    text-align: center;
+    width: 800px;
+    border-bottom: 2px solid;
+    border-color: rgb(194, 205, 209);
+    font-weight: bold;
+    height: 40px;
+}
+
+#logo-wrapper {
+    flex-grow: 1;
+    display: flex;
+    height: 160px;
+    max-height: 160px;
+    flex-basis: auto;
+    padding-left: 5px;
+    padding-right: 5px;
+    background: linear-gradient(rgb(63, 131, 186), rgb(211, 224, 235));
+}
+
+.filler {
+    width: 100%;
+    height: 100%;
+}
+
+#username-hello-wrapper {
+    min-width: 250px;
+}
+
+.logout {
+    margin-left: 3px;
+}
+
+.vertical {
+    flex-direction: column;
+}
+
+.flex-start {
+    align-items: flex-start;
+}
+
+#footer {
+    text-align: center;
+    flex-grow: 1;
+    flex-basis: auto;
+    height: 60px;
+    max-height: 60px;
+    padding-top: 25px;
+    background: linear-gradient(rgb(215, 227, 237), rgb(121, 171, 212));
+}
+
+#footer .line {
+    height: 1px;
+    width: 30%;
+    align-self: center;
+    border-bottom: 1px solid;
+    border-color: rgb(82, 89, 94);
+    margin-left: auto;
+    margin-right: auto;}
+
+#content-wrapper {
+    flex-grow: 2;
+}
+
+#menu {
+    min-width: 250px;
+    background: rgb(213, 225, 235);
+    align-self: stretch;
+}
+
+#content {
+    padding: 7px;
+    padding-left: 30px;
+    padding-top: 30px;
+    background-color: rgb(228, 232, 236);
+    align-self: stretch;
+    width: 100%;
+}
+
+#menu ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+#menu ul li {
+    width: 85%;
+    padding-left: 7px;
+    margin-top: 15px;
+    font-family: Verdana, Segoe, sans-serif;
+    font-size: 20px;
+    line-height: 1.5;
+    font-weight: normal;
+    text-align: center;
+    height: 40px;
+}
+
+#menu ul li a {
+    text-decoration: none;
+    color: initial;
+    display: inline-block;
+    text-align: left;
+    padding-left: 35px;
+    line-height: 40px;
+    width: 177px;
+    height: inherit;
+}
+
+#menu ul li:hover {
+    background: rgb(75, 154, 219);
+    height: 43px;
+    border: 2px solid;
+    border-color: rgb(90, 150, 199);
+}
+
+#menu ul li a.active {
+    background: rgb(158, 190, 217);
+    color: rgb(136, 23, 25);
+    /*border: 2px solid;
+    border-color: rgb(168, 202, 230);*/
+}
+
+.list {
+    background: rgb(235, 240, 245);
+    border: 1px solid;
+    border-color: rgb(189, 195, 201);
+    display: grid;
+    grid-template-columns: 16px repeat(4, 1fr);
+    min-width: 300px;
+    max-width: 440px;
+    align-items: baseline;
+    justify-items: start;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.row {
+    font-size: 14px;
+    display: contents;
+}
+
+.listitem {
+    width: 100%;
+    margin-inline: 0px;
+    margin-block: 4px;
+    line-height: normal;    
+}
+
+.username {
+/*    margin-left: 10px;*/
+}
+
+.userrole {
+/*    margin-left: 10px;*/
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.userconfig {
+    padding-left: 4px;
+    min-width: 60px;
+    max-width: fit-content;
+}
+
+.userselected {
+    width: 1px;
+    height: 1px;
+    border: 2px solid;
+    border-radius: 110%;
+    border-color: rgb(136, 23, 25);
+    background-color: rgb(136, 23, 25);
+    line-height: 1;
+    visibility: hidden;
+}
+
+.userselected.active {
+    width: 1px;
+    height: 1px;
+    visibility: initial;
+}
+
+.users-buttons {
+    height: 26px;
+    width: 26px;
+    margin: 5px;
+    border-width: 0px;
+}
+
+#users-commands {
+    flex-direction: row-reverse;
+}
+
+#add-user-button {
+    background: url(../plus.png);
+    background-size: 100%;
+}
+
+#remove-user-button {
+    background: url(../minus.png);
+    background-size: 100%;
+}
+
+#remove-user-button:disabled,
+#remove-user-button[disabled]{
+    background: url(../minus-inactive.png);
+    background-size: 100%;
+}
+
+#commit-user-button {
+    background: url(../mark.png);
+    background-size: 100%;
+}
+
+#commit-user-button:disabled,
+#commit-user-button[disabled]{
+    background: url(../mark-inactive.png);
+    background-size: 100%;
+}
+
+.hidden {
+    visibility: hidden;
+    width: 0px;
+    height: 0px;
+    display: none;
+}
+
+.password-buttons {
+    width: 140px;
+}
+
+.splash {
+    background: rgba(183, 198, 201, .82);
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    position: absolute;
+    display: none;
+}
+
+.splash.active {
+    display: block;
+}
+
+#div-new-password {
+    top: calc(50% - 150px);
+    left: calc(50% - 160px);
+/*    height: 70px;
+    width: 400px;*/
+    text-align: center;
+    border: 1px solid;
+    border-radius: 16px;
+    position: absolute;
+    box-shadow: 3px 3px 5px rgb(95, 107, 117);
+    background: rgb(237, 247, 250);
+    padding: 3%;
+    padding-top: 1.5%;
+    padding-bottom: 2.2%;
+}
+
+#fill-new-password, #cancel-fill-new-password {
+    margin-left: 15px;
+}
+
+#user-create-wrapper {
+    margin-left: 30px;
+    border-left: 2px solid;
+    border-color: rgb(189, 195, 201);
+    padding-left: 30px;
+    width: 160px;
+    height: 203px
+}
+
+#user-create-header {
+    margin-bottom: 15px;
+}
+
+#user-create-header.disable {
+    color: rgba(16, 16, 16, 0.3);
+}
+
+#user-create-error-wrapper {
+    min-height: 0px;
+    max-height: fit-content;
+    margin: 0px;
+}
+
+[id^='user-create-'] {
+    margin-bottom: 10px;
+}
+
+#config-wrapper {
+    padding-left: 30px;
+    padding-right: 40px;
+}
+
+#config-header {
+    min-width: 210px;
+}
