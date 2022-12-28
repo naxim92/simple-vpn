@@ -36,22 +36,23 @@ wireguard_dir = '../wireguard/config'
 wireguard_config_pattern = 'peer'
 wireguard_config_qr_pattern = 'peer[0-9]+\.png'
 
+
 app = Flask(__name__)
-sessionKey = None
-try:
-    sqlite_connection = sqlite3.connect(webui_db_path)
-    cursor = sqlite_connection.cursor()
-    sql = """
-    select value from config
-    where name = 'SessionKey'
-    """
-    cursor.execute(sql)
-    app.sessionKey = cursor.fetchone()
-except Exception:
-    pass
-finally:
-    cursor.close()
-    sqlite_connection.close()
+with app.app_context():
+    try:
+        sqlite_connection = sqlite3.connect(webui_db_path)
+        cursor = sqlite_connection.cursor()
+        sql = """
+        select value from config
+        where name = 'SessionKey'
+        """
+        cursor.execute(sql)
+        app.secret_key = cursor.fetchone()[0]
+    except Exception:
+        abort(500)
+    finally:
+        cursor.close()
+        sqlite_connection.close()
 
 metrics = PrometheusMetrics(app)
 metrics.info('app_info', 'Application info', version='1.0.3')
@@ -385,19 +386,21 @@ def auth():
 
 
 def try_config_app():
+    sessionKey = b64encode(urandom(20)).decode()
     try:
         sqlite_connection = sqlite3.connect(webui_db_path)
         cursor = sqlite_connection.cursor()
         sql = """
         create table if not exists security
         (username type unique, password, salt, role, config);
+        create table if not exists config
+        (name type unique, value);
         """
         cursor.executescript(sql)
         sql = """
         insert into config (name, value)
         values (:name, :value)
         """
-        sessionKey = b64encode(urandom(20)).decode()
         cursor.execute(sql,
                        {"name": 'SessionKey',
                         "value": sessionKey})
@@ -407,6 +410,7 @@ def try_config_app():
     finally:
         cursor.close()
         sqlite_connection.close()
+    app.secret_key = sessionKey
 
 
 def try_create_user(username, role, password=None, password_hash=None):
