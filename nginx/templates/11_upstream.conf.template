@@ -1,0 +1,7 @@
+upstream certbot_docker {
+    server wireguard_certbot:80;
+}
+
+upstream webgui_docker {
+    server wireguard_webuiapp:80;
+}

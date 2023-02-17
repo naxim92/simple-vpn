@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/local/bin/certbot renew --standalone -d ${NGINX_HOST} --agree-tos --max-log-backups 20 -n --deploy-hook "/opt/certbot/wireguard_balancer_reload.py -o /var/log/letsencrypt/balancer_reloader.log"

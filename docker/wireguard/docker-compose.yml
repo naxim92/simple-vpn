@@ -18,7 +18,7 @@ services:
       # - ALLOWEDIPS=0.0.0.0/0 #optional
       # - LOG_CONFS=true #optional
     volumes:
-      - ./config:/config:rw
+      - ../../wireguard_configs:/config:rw
     ports:
       - ${WG_PORT:-51820}:51820/udp
     sysctls:

@@ -1,10 +1,23 @@
-upstream webgui_docker {
-    server wireguard_webuiapp:80;
-}
-
 server {
     listen 80;
     server_name ${NGINX_HOST};
+
+    location / {
+        port_in_redirect off;
+        return 301 https://$host:${NGINX_HTTPS_PORT}$request_uri;
+    }
+
+    location /.well-known/acme-challenge/ {
+      proxy_pass http://wireguard_certbot;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name ${NGINX_HOST};
+
+    ssl_certificate /etc/nginx/ssl/live/${NGINX_HOST}/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/live/${NGINX_HOST}/privkey.pem;
 
     error_page 403 /;
 

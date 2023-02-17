@@ -1,7 +1,10 @@
 #! /bin/bash
 
+sudo mkdir -p /srv/wireguard/docker/wireguard
+
 # Install wireguard service
-sudo mv wireguard /srv/wireguard
-cd /srv/wireguard
-mkdir /srv/wireguard/config
+sudo mv ~/wireguard/docker/wireguard/ /srv/wireguard/docker
+sudo mv ~/wireguard/wireguard_configs /srv/wireguard/wireguard_configs
+
+cd /srv/wireguard/docker/wireguard
 docker compose up -d wireguard

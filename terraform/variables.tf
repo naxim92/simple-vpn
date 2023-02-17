@@ -49,3 +49,17 @@ variable "network_public_ip_name" {
   default = "vm-public-address"
 }
 
+variable "wg_url" {
+  type = string
+  default = "wireguard.local"
+}
+
+variable "letsenrypt_email" {
+  type = string
+  default = "letencrypt@email.com"
+}
+
+variable "wg_client_amount" {
+  type = number
+  default = 10
+}
