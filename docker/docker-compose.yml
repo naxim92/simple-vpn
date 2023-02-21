@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  simple_vpn_builder:
+    image: ubuntu
+    container_name: simple_vpn_builder
+    volumes:
+      - ../:/simple-vpn/:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+    working_dir: /simple-vpn
+    entrypoint: ["/simple-vpn/docker/builder-env.sh"]

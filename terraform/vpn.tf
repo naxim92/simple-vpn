@@ -169,11 +169,3 @@ resource "google_compute_instance" "vpn" {
       })}"]
   }
 }
-
-
-##################################################
-# Print output
-##################################################
-output "out_ip" {
-  value = google_compute_address.static.address
-}
