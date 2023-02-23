@@ -1,42 +1,25 @@
-Windows Docker Engine:
-"buildkit": false
+# This is a small simple implementaion of service which helps you to deploy and manage Wireguard VPN
 
-Gloud service-account's permissions:
-    Compute Admin
-    Compute Engine Service Agent
-    Compute Network Admin
-    Compute OS Admin Login
-    Compute Public IP Admin
+## Prerequisites
 
-sudo docker-compose run --rm -p 80:80 -p 443:443 certbot
-sudo docker-compose run --rm webuiapp pip install -r requirements.txt
+### Software
 
-sudo docker-compose run --rm certbot certonly --standalone -d ${NGINX_HOST:-wireguard.local} -m "${EMAIL} --agree-tos --no-eff-email --dry-run
+You need to have only docker with docker-compose plugin on your machine.
 
-import socket
-import os
+### Miscellaneous
 
-socket_path = '/var/run/docker.sock'
+- Windows Docker Engine configuration:
+    "buildkit": false
 
-if not os.path.exists(socket_path):
-    raise ValueError('No docker.sock on machine (is a Docker server installed?)')
-client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-client.connect(socket_path)
-client.send(b'POST /containers/wireguard_balancer/kill?signal=HUP HTTP/1.1\n')
-client.send(b'Host: docker\n')
-client.send(b'\n')
-dataFromServer = client.recv(1024)
-print(dataFromServer.decode().split('\r\n'))
+You need to have gcloud account, service-account there and credentials json file, DNS record (will be linked to VPN ip-address during deploy) and generated pair of keys to manage the VPS server.
 
+- Gloud service-account's permissions:
+    - Compute Admin
+    - Compute Engine Service Agent
+    - Compute Network Admin
+    - Compute OS Admin Login
+    - Compute Public IP Admin
 
-client.send(b'GET /version HTTP/1.1\n')
-client.send(b'Host: docker\n')
+## Installation
 
-/usr/local/bin/certbot renew --deploy-hook "/opt/certbot/ wireguard_balancer_reload.py -o /var/log/letsencrypt/balancer_reloader.log" --dry-run
-
-docker network inspect wireguard_default -f '{{(index .IPAM.Config 0).Gateway}}'
-
-
-
-terraform apply -auto-approve -target google_compute_address.static
-terraform apply -auto-approve
+Just start install script in root directory and try it!
