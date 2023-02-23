@@ -24,6 +24,7 @@ sudo rm -f /srv/wireguard/webui/data/webui.db
 
 # Run wireguard
 docker compose -p wireguard up -d --force-recreate
+sleep 5
 
 # Install default params for Wireguard WebUI
 curl -k https://$GATEWAY_IP/install --header "Host: ${nginx_host}"
@@ -32,4 +33,5 @@ curl -k https://$GATEWAY_IP/install --header "Host: ${nginx_host}"
 rm -rf ~/wireguard
 
 # TODO Удалить, когда поправлю баг с пятисотыми после инсталла
+sleep 5
 docker stop wireguard_webuiapp && docker start wireguard_webuiapp

@@ -32,7 +32,7 @@ webui_db_path = app_path + '/data/webui.db'
 default_user = 'admin'
 default_password = 'admin'
 default_admin_role = Roles.ADMIN.value
-wireguard_dir = '../wireguard/config'
+wireguard_dir = '../wireguard_configs'
 wireguard_config_pattern = 'peer'
 wireguard_config_qr_pattern = 'peer[0-9]+\.png'
 
@@ -90,6 +90,11 @@ def install():
             password=default_password)
     except CreateUserException:
         abort(500)
+    # TODO Наверное стоит удалить при исправлении косяка с пятисотыми после инсталла
+    try:
+        try_load_secret_key()
+    except Exception:
+        pass
     return 'OK!'
 
 
@@ -244,7 +249,7 @@ def reset_vars():
 
 
 @app.before_request
-def getSessionKey():
+def get_role():
     check_no_session_url = re.match(
         "^/(favicon.ico$|static/|install($|(/$)))",
         request.path)
@@ -256,13 +261,7 @@ def getSessionKey():
             SessionKey is missing.
             Try to reinstall WebUI.
             """)
-    # First request after run will be unauthenticated
-    # as secret_key hasn't properly loaded yet.
-    # Second and nexts requests will be processed correctly.
 
-
-@app.before_request
-def get_role():
     app.auth_username = session.get("authUsername")
     if not app.auth_username:
         app.authenticated = False
@@ -416,6 +415,7 @@ def try_config_app():
     finally:
         cursor.close()
         sqlite_connection.close()
+    # TODO Это почемуто не работает (после инсталла пятисоитит что нет ключа)
     app.secret_key = sessionKey
 
 
