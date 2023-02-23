@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-TF_DIR := "terraform"
+TF_DIR := terraform
 TFVARS_FILE :=  $(TF_DIR)/terraform.tfvars
 
 INSTALL_MSG := "Do you have valid DNS name linked with public ip?"
@@ -25,15 +25,22 @@ PRIVATE_KEY_FILE := "../private/manager_key.private"
 
 all: install
 
-.PHONY: help config config_1 config_2 build-utils install deploy-prod deploy-public-ip deploy-service clean clean_all
+.PHONY: help config config_1 config_2 build-builder install deploy-prod deploy-public-ip deploy-service clean clean_all
 help:
-	@echo "Use it for deploy, preparing environments, udpdating tools version, etc"
-	@echo "To deploy on prod start install"
-	@echo "[Not finished] To compile environment start build-utils"
+	@echo "--------------------------------------------------------------------------------"
+	@echo "Use it for deploy, preparing environments, etc"
+	@echo "To deploy on prod start install (it includes config)"
+	@echo "To destroy prod start destroy"
+	@echo "To config project's variables start config"
+	@echo "To clean only tfvars start clean"
+	@echo "To clean all runtime files start clean_all"
+	@echo "To compile environment start build-builder"
+	@echo "--------------------------------------------------------------------------------"
+	
 
-build-utils:
-	@echo "[Not finished] Start preparing the environment..."
-	docker build -f ./Dockerfile-utils -t naxim/vpn_utils --force-rm  ./docker
+build-builder:
+	@echo "Start preparing the environment..."
+	docker build -f ./Dockerfile-builder -t naxim/simple-vpn-builder --force-rm  ./docker
 
 install: config deploy-prod
 
@@ -54,7 +61,7 @@ deploy-service:
 	terraform -chdir=terraform apply -auto-approve, \
 	@echo "You need to create appropriate DNS record! Try again.")
 
-config: config_1 terraform/terraform.tfvars config_2
+config: config_1 $(TFVARS_FILE) config_2
 
 config_1:
 	@echo "--------------------------------------------------------------------------------"
@@ -73,13 +80,13 @@ $(TFVARS_FILE):
 	$(eval WG_CLIENT_AMOUNT := $(shell read -r -p $(WG_CLIENT_AMOUNT_MSG) && echo $$REPLY))
 	@echo
 	@cp $@.sample $@
-	@sed -i 's/%GCLOUD_FILE%/$(GCLOUD_FILE)/' $@
-	@sed -i 's/%GCLOUD_PROJECT%/$(GCLOUD_PROJECT)/' $@
-	@sed -i 's/%PUB_KEY_FILE%/$(PUB_KEY_FILE)/' $@
-	@sed -i 's/%PRIVATE_KEY_FILE%/$(PRIVATE_KEY_FILE)/' $@
-	@sed -i 's/%LETSENCRYPT_EMAIL%/$(LETSENCRYPT_EMAIL)/' $@
-	@sed -i 's/%WG_URL%/$(WG_URL)/' $@
-	@sed -i 's/%WG_CLIENT_AMOUNT%/$(WG_CLIENT_AMOUNT)/' $@
+	@sed -i 's~%GCLOUD_FILE%~$(GCLOUD_FILE)~' $@
+	@sed -i 's~%GCLOUD_PROJECT%~$(GCLOUD_PROJECT)~' $@
+	@sed -i 's~%PUB_KEY_FILE%~$(PUB_KEY_FILE)~' $@
+	@sed -i 's~%PRIVATE_KEY_FILE%~$(PRIVATE_KEY_FILE)~' $@
+	@sed -i 's~%LETSENCRYPT_EMAIL%~$(LETSENCRYPT_EMAIL)~' $@
+	@sed -i 's~%WG_URL%~$(WG_URL)~' $@
+	@sed -i 's~%WG_CLIENT_AMOUNT%~$(WG_CLIENT_AMOUNT)~' $@
 
 config_2:
 	@echo "Project configuration is successful"
