@@ -5,6 +5,7 @@ services:
     image: tiangolo/uwsgi-nginx:${VER_PY:-python3.9}
     container_name: wireguard_webuiapp
     volumes:
+      - ../../wireguard_configs:/wireguard_configs
       - ../../webui:/app:r
       - /app/static/design-src
       - webuiapp_pycache1:/app/.cache
