@@ -3,6 +3,7 @@ private/*
 terraform/terraform.tfstate*
 terraform/terraform.tfvars
 terraform/.terraform*
+docker/dev/.env
 docker/wireguard/.env
 docker/wireguard/config
 wireguard_configs/*

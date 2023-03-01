@@ -39,6 +39,7 @@ server {
     }
 
     location  /install {
+        allow 127.0.0.1;
         allow ${NGINX_DOCKER_HOST_IP};
         deny all;
         

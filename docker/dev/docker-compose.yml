@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  openssl:
+    image: alpine/openssl
+    container_name: simple_vpn_dev_openssl
+    environment:
+      - nginx_host=${NGINX_HOST:-wireguard.local}
+    volumes:
+      - ${DATA_PATH}/:/data/
+      - certbot:/data/private/ssl
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: ["/data/docker/dev/generate_selfsigned_cert.sh"]
+
+volumes:
+  certbot:

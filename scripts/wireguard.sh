@@ -7,4 +7,4 @@ sudo mv ~/wireguard/docker/wireguard/ /srv/wireguard/docker
 sudo mv ~/wireguard/wireguard_configs /srv/wireguard/wireguard_configs
 
 cd /srv/wireguard/docker/wireguard
-docker compose up -d wireguard
+docker compose -p wireguard up -d wireguard

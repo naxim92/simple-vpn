@@ -5,8 +5,8 @@ services:
     image: tiangolo/uwsgi-nginx:${VER_PY:-python3.9}
     container_name: wireguard_webuiapp
     volumes:
-      - ../../wireguard_configs:/wireguard_configs
-      - ../../webui:/app:r
+      - ${DATA_PATH}/wireguard_configs:/wireguard_configs
+      - ${DATA_PATH}/webui:/app:r
       - /app/static/design-src
       - webuiapp_pycache1:/app/.cache
       - webuiapp_pycache2:/app/__pycache__
@@ -24,10 +24,10 @@ services:
       - NGINX_DOCKER_HOST_IP=${NGINX_DOCKER_HOST_IP:-'192.168.1.1'}
       - NGINX_HTTPS_PORT=${NGINX_HTTPS_PORT:-80}
     volumes:
-      - ../../nginx:/etc/nginx/
+      - ${DATA_PATH}/nginx:/etc/nginx/
       - balancer_conf_d:/etc/nginx/conf.d
       - certbot:/etc/nginx/ssl:ro
-      - ../../webui/static:/app:r
+      - ${DATA_PATH}/webui/static:/app:r
       - /app/design-src
     ports:
       - ${NGINX_HTTP_PORT:-80}:80
@@ -43,7 +43,7 @@ services:
       - certbot:/etc/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock
       - ./wireguard_balancer_reload.py:/opt/certbot/wireguard_balancer_reload.py
-      - ../../logs:/var/log/letsencrypt
+      - ${DATA_PATH}/logs:/var/log/letsencrypt
       - ./renew_certs_cron:/etc/periodic/15min/renew_certs_cron
     entrypoint: ["crond", "-f"]
 

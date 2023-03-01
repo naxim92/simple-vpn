@@ -2,6 +2,9 @@ SHELL := /bin/bash
 
 TF_DIR := terraform
 TFVARS_FILE :=  $(TF_DIR)/terraform.tfvars
+DEV_ENV_FILE := docker/dev/.env
+DEV_WEBUI_ENV_FILE := docker/webui/.env
+DEV_WIREGUARD_ENV_FILE := docker/wireguard/.env
 
 INSTALL_MSG := "Do you have valid DNS name linked with public ip?"
 DESTROY_MSG := "Are you sure to destroy Wireguard infrastructure?"
@@ -25,7 +28,7 @@ PRIVATE_KEY_FILE := "../private/manager_key.private"
 
 all: install
 
-.PHONY: help config config_1 config_2 build-builder install deploy-prod deploy-public-ip deploy-service clean clean_all
+.PHONY: help config config_1 config_2 build-builder install deploy-prod deploy-public-ip deploy-service clean clean_all clean_dev install-dev deploy-dev
 help:
 	@echo "--------------------------------------------------------------------------------"
 	@echo "Use it for deploy, preparing environments, etc"
@@ -35,6 +38,8 @@ help:
 	@echo "To clean only tfvars start clean"
 	@echo "To clean all runtime files start clean_all"
 	@echo "To compile environment start build-builder"
+	@echo "[DEV] To deploy project in dev environment start deploy-dev"
+	@echo "[DEV] To clean artifatcs from dev environment start clean_dev"
 	@echo "--------------------------------------------------------------------------------"
 	
 
@@ -79,7 +84,7 @@ $(TFVARS_FILE):
 	$(eval WG_URL := $(shell read -r -p $(WG_URL_MSG) && echo $$REPLY))
 	$(eval WG_CLIENT_AMOUNT := $(shell read -r -p $(WG_CLIENT_AMOUNT_MSG) && echo $$REPLY))
 	@echo
-	@cp $@.sample $@
+	@cp $@.tpl $@
 	@sed -i 's~%GCLOUD_FILE%~$(GCLOUD_FILE)~' $@
 	@sed -i 's~%GCLOUD_PROJECT%~$(GCLOUD_PROJECT)~' $@
 	@sed -i 's~%PUB_KEY_FILE%~$(PUB_KEY_FILE)~' $@
@@ -105,3 +110,49 @@ clean_all: confirmation
 	@rm -f $(TF_DIR)/terraform.tfstate.backup
 	@rm -f $(TFVARS_FILE)
 
+install-dev: config_3 $(DEV_WEBUI_ENV_FILE) $(DEV_WIREGUARD_ENV_FILE) $(DEV_ENV_FILE) deploy-dev
+
+config_3:
+	@echo "--------------------------------------------------------------------------------"
+	@echo "[DEV] Let's configure our project in DEVELOPMENT environment!"
+	@echo "--------------------------------------------------------------------------------"
+
+$(DEV_WEBUI_ENV_FILE):
+	$(eval WG_URL := $(shell read -r -p $(WG_URL_MSG) && echo $$REPLY))
+	$(eval NGINX_DOCKER_HOST_IP := $(shell docker network inspect wireguard_default -f '{{(index .IPAM.Config 0).Gateway}}'))
+	@cp $@.tpl $@
+	@sed -i 's~172\.17\.0\.1~$(NGINX_DOCKER_HOST_IP)~' $@
+	@sed -i 's~$${nginx_host}~$(WG_URL)~' $@
+	@sed -i 's~$${email}~test@email~' $@
+
+$(DEV_WIREGUARD_ENV_FILE):
+	$(eval WG_CLIENT_AMOUNT := $(shell read -r -p $(WG_CLIENT_AMOUNT_MSG) && echo $$REPLY))
+	@echo
+	@cp $@.tpl $@
+	@sed -i 's~$${nginx_host}~$(WG_URL)~' $@
+	@sed -i 's~$${wg_client_amount}~$(WG_CLIENT_AMOUNT)~' $@
+
+$(DEV_ENV_FILE):
+	@cp $@.tpl $@
+	@sed -i 's~%NGINX_HOST%~$(WG_URL)~' $@
+
+deploy-dev: .EXPORT_ALL_VARIABLES
+	@echo "Deploy on your machine...."
+	$(eval HOST_DATA_PATH := $(shell docker inspect $$HOSTNAME -f '{{json .HostConfig.Binds}}' | jq '.[] | select(. | contains("simple-vpn")) | split(":/simple-vpn")[0]'))
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm openssl
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/wireguard/docker-compose.yml up -d wireguard
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml run --rm webuiapp pip install -r requirements.txt
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml up -d webuiapp
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d balancer
+	@curl -s -L -k --header 'Host: $(WG_URL)' https://$(NGINX_DOCKER_HOST_IP)/install?force 
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml restart bwebuiappalancer
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart balancer
+
+.EXPORT_ALL_VARIABLES:
+
+clean_dev:
+	@rm -f $(DEV_WIREGUARD_ENV_FILE)
+	@rm -f $(DEV_WEBUI_ENV_FILE)
+	@rm -f $(DEV_ENV_FILE)
+	@find  logs -type f ! -name ".gitkeep" | xargs rm -f
+	@find  webui/data -type f ! -name ".gitkeep" | xargs rm -f

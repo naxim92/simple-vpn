@@ -1,0 +1,2 @@
+NGINX_HOST=%NGINX_HOST%
+DATA_PATH='../..'
