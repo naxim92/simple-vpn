@@ -1,6 +1,12 @@
 version: "3.9"
 
 services:
+  pylint:
+    image: cytopia/pylint
+    container_name: simple_vpn_dev_pylint
+    volumes:
+      - ${DATA_PATH}/:/data/
+
   openssl:
     image: alpine/openssl
     container_name: simple_vpn_dev_openssl

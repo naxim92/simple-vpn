@@ -119,9 +119,9 @@ config_3:
 
 $(DEV_WEBUI_ENV_FILE):
 	$(eval WG_URL := $(shell read -r -p $(WG_URL_MSG) && echo $$REPLY))
-	$(eval NGINX_DOCKER_HOST_IP := $(shell docker network inspect wireguard_default -f '{{(index .IPAM.Config 0).Gateway}}'))
+	$(eval NGINX_DOCKER_HOST_SUBNET := $(shell docker network inspect wireguard_default -f '{{(index .IPAM.Config 0).Subnet}}'))
 	@cp $@.tpl $@
-	@sed -i 's~172\.17\.0\.1~$(NGINX_DOCKER_HOST_IP)~' $@
+	@sed -i 's~172\.17\.0\.0/16~$(NGINX_DOCKER_HOST_SUBNET)~' $@
 	@sed -i 's~$${nginx_host}~$(WG_URL)~' $@
 	@sed -i 's~$${email}~test@email~' $@
 
@@ -144,7 +144,7 @@ deploy-dev: .EXPORT_ALL_VARIABLES
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml run --rm webuiapp pip install -r requirements.txt
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml up -d webuiapp
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d balancer
-	@curl -s -L -k --header 'Host: $(WG_URL)' https://$(NGINX_DOCKER_HOST_IP)/install?force 
+	@curl -s -L -k --header 'Host: $(WG_URL)' https://host.docker.internal/install?force 
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml restart bwebuiappalancer
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart balancer
 

@@ -11,7 +11,7 @@ cd /srv/wireguard/docker/webui
 
 # Correct gateway address in .env file
 sudo chmod +x set_docker_gateway_ip.sh
-GATEWAY_IP=`./set_docker_gateway_ip.sh`
+GATEWAY_SUBNET=`./set_docker_gateway_subnet.sh`
 
 # Get SSL certificates from Let's Encrypt by certbot
 docker compose run -p 80:80 --rm -v wireguard_certbot:/etc/letsencrypt --entrypoint certbot certbot certonly --standalone -d ${nginx_host} -m "${email}" --agree-tos --no-eff-email
@@ -27,7 +27,7 @@ docker compose -p wireguard up -d --force-recreate
 sleep 5
 
 # Install default params for Wireguard WebUI
-curl -k https://$GATEWAY_IP/install --header "Host: ${nginx_host}"
+curl -k https://host.docker.internal/install --header "Host: ${nginx_host}"
 
 # Cleanup
 rm -rf ~/wireguard

@@ -40,7 +40,7 @@ server {
 
     location  /install {
         allow 127.0.0.1;
-        allow ${NGINX_DOCKER_HOST_IP};
+        allow ${NGINX_DOCKER_HOST_SUBNET};
         deny all;
         
         proxy_pass http://webgui_docker;
