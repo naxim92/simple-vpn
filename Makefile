@@ -5,6 +5,7 @@ TFVARS_FILE :=  $(TF_DIR)/terraform.tfvars
 DEV_ENV_FILE := docker/dev/.env
 DEV_WEBUI_ENV_FILE := docker/webui/.env
 DEV_WIREGUARD_ENV_FILE := docker/wireguard/.env
+DEV_WEBUI_DB_FILE := webui/data/webui.db
 
 INSTALL_MSG := "Do you have valid DNS name linked with public ip?"
 DESTROY_MSG := "Are you sure to destroy Wireguard infrastructure?"
@@ -28,7 +29,7 @@ PRIVATE_KEY_FILE := "../private/manager_key.private"
 
 all: install
 
-.PHONY: help config config_1 config_2 build-builder install deploy-prod deploy-public-ip deploy-service clean clean_all clean_dev install-dev deploy-dev
+.PHONY: help config config_1 config_2 build-builder install deploy-prod deploy-public-ip deploy-service destroy clean clean_all clean_dev install-dev deploy-dev destroy-dev
 help:
 	@echo "--------------------------------------------------------------------------------"
 	@echo "Use it for deploy, preparing environments, etc"
@@ -110,7 +111,7 @@ clean_all: confirmation
 	@rm -f $(TF_DIR)/terraform.tfstate.backup
 	@rm -f $(TFVARS_FILE)
 
-install-dev: config_3 $(DEV_WEBUI_ENV_FILE) $(DEV_WIREGUARD_ENV_FILE) $(DEV_ENV_FILE) deploy-dev
+install-dev: config_3 $(DEV_WEBUI_ENV_FILE) $(DEV_WIREGUARD_ENV_FILE) $(DEV_ENV_FILE) deploy-dev $(DEV_WEBUI_DB_FILE)
 
 config_3:
 	@echo "--------------------------------------------------------------------------------"
@@ -142,10 +143,11 @@ deploy-dev: .EXPORT_ALL_VARIABLES
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm openssl
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/wireguard/docker-compose.yml up -d wireguard
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml run --rm webuiapp pip install -r requirements.txt
-	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml up -d webuiapp
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d webuiapp
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d balancer
-	@curl -s -L -k --header 'Host: $(WG_URL)' https://host.docker.internal/install?force 
-	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml restart bwebuiappalancer
+	@sleep 3
+	@curl -s -L -k --header 'Host: $(WG_URL)' https://host.docker.internal/install | grep OK 
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart webuiapp
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart balancer
 
 .EXPORT_ALL_VARIABLES:
@@ -156,3 +158,7 @@ clean_dev:
 	@rm -f $(DEV_ENV_FILE)
 	@find  logs -type f ! -name ".gitkeep" | xargs rm -f
 	@find  webui/data -type f ! -name ".gitkeep" | xargs rm -f
+
+destroy-dev:
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml down || true
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/wireguard/docker-compose.yml down || true

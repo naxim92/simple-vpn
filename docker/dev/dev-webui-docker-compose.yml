@@ -2,3 +2,7 @@ services:
     balancer:
         extra_hosts:
             - "wireguard_certbot:127.0.0.1"
+
+    webuiapp:
+        volumes:
+          - ${DATA_PATH}/webui/data:/app/data
