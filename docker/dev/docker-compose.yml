@@ -1,11 +1,12 @@
 version: "3.9"
 
 services:
-  pylint:
-    image: cytopia/pylint
-    container_name: simple_vpn_dev_pylint
+  tester:
+    image: naxim/simple-vpn-dev
+    container_name: simple_vpn_dev_tester
     volumes:
       - ${DATA_PATH}/:/data/
+    command: ["test/pylint/script.sh"]
 
   openssl:
     image: alpine/openssl
