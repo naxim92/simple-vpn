@@ -164,7 +164,7 @@ destroy-dev:
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/wireguard/docker-compose.yml down || true
 
 test: test-pylint
-	@docker compose -f docker/dev/docker-compose.yml run --rm tester
 
 test-pylint:
-	@docker compose -f docker/dev/docker-compose.yml run --rm tester pylint webui
+	$(eval HOST_DATA_PATH := $(shell docker inspect $$HOSTNAME -f '{{json .HostConfig.Binds}}' | jq '.[] | select(. | contains("simple-vpn")) | split(":/simple-vpn")[0]'))
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm -ti tester pylint webui
