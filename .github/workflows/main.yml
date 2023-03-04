@@ -1,0 +1,19 @@
+name: Launch pylint
+
+on:
+  push:
+    branches:
+      - cicd
+
+jobs:
+  test-py-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Start linter
+        uses: sudo-bot/action-docker-compose@latest
+        with:
+          cli-args: "-p wireguard -f ./docker/docker-compose.yml run --rm simple_vpn_builder test-pylint"
+          
