@@ -16,7 +16,6 @@ jobs:
         run: ls -la
       
       - name: Start linter
-        uses: sudo-bot/action-docker-compose@latest
-        with:
-          cli-args: "-p wireguard -f docker/dev/docker-compose.yml run --rm -ti tester pylint webui"
+        run: |
+          docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm -ti tester pylint webui
           
