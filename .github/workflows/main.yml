@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        
+      - name: Prepare for tests
+        run: ls -la
       
       - name: Start linter
         uses: sudo-bot/action-docker-compose@latest
