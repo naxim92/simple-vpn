@@ -10,6 +10,7 @@ You need to have only docker with docker-compose plugin on your machine.
 
 - Windows Docker Engine configuration:
     "buildkit": false
+    set COMPOSE_DOCKER_CLI_BUILD=0
 
 You need to have gcloud account, service-account there and credentials json file, DNS record (will be linked to VPN ip-address during deploy) and generated pair of keys to manage the VPS server.
 

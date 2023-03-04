@@ -29,7 +29,7 @@ PRIVATE_KEY_FILE := "../private/manager_key.private"
 
 all: install
 
-.PHONY: help config config_1 config_2 build-builder install deploy-prod deploy-public-ip deploy-service destroy clean clean_all clean_dev install-dev deploy-dev destroy-dev
+.PHONY: help config config_1 config_2 build-builder install deploy-prod deploy-public-ip deploy-service destroy clean clean_all clean_dev install-dev deploy-dev destroy-dev test test-pylint
 help:
 	@echo "--------------------------------------------------------------------------------"
 	@echo "Use it for deploy, preparing environments, etc"
@@ -162,3 +162,9 @@ clean_dev:
 destroy-dev:
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml down || true
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/wireguard/docker-compose.yml down || true
+
+test: test-pylint
+	@docker compose -f docker/dev/docker-compose.yml run --rm tester
+
+test-pylint:
+	@docker compose -f docker/dev/docker-compose.yml run --rm tester pylint webui

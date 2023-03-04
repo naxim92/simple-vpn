@@ -4,6 +4,8 @@ services:
   tester:
     image: naxim/simple-vpn-dev
     container_name: simple_vpn_dev_tester
+    environment:
+      - PYLINTRC=/data/test/pylint/pylintrc
     volumes:
       - ${DATA_PATH}/:/data/
     command: ["test/pylint/script.sh"]
