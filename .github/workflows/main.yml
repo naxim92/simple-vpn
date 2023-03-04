@@ -15,5 +15,5 @@ jobs:
       - name: Start linter
         uses: sudo-bot/action-docker-compose@latest
         with:
-          cli-args: "-p wireguard -f ./docker/docker-compose.yml run --rm simple_vpn_builder"
+          cli-args: "-p wireguard -f ./docker/docker-compose.yml run --rm simple_vpn_builder test-pylint"
           
