@@ -167,12 +167,14 @@ test: test-pylint
 
 test-pylint:
 	$(eval HOST_DATA_PATH := $(shell docker inspect $$HOSTNAME -f '{{json .HostConfig.Binds}}' | jq '.[] | select(. | contains("simple-vpn")) | split(":/simple-vpn")[0]'))
-	@echo $(HOST_DATA_PATH)
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester
 
-test-full: test-pylint-f
+test-full: test-pylint-f test-eslint-f
 
-test-pylint:
+test-pylint-f:
 	$(eval HOST_DATA_PATH := $(shell docker inspect $$HOSTNAME -f '{{json .HostConfig.Binds}}' | jq '.[] | select(. | contains("simple-vpn")) | split(":/simple-vpn")[0]'))
-	@echo $(HOST_DATA_PATH)
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester pylint webui
+
+test-eslint-f:
+	$(eval HOST_DATA_PATH := $(shell docker inspect $$HOSTNAME -f '{{json .HostConfig.Binds}}' | jq '.[] | select(. | contains("simple-vpn")) | split(":/simple-vpn")[0]'))
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester npx eslint -c test/eslint/.eslintrc.yml webui/static/js/*.js

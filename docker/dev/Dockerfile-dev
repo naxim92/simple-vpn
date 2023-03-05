@@ -10,9 +10,12 @@ RUN apk add --no-cache --update \
  bash \
  python3 \
  py3-pip \
- git
+ git \
+ npm
 
 RUN pip install pylint
+
+RUN npm install -g eslint eslint-config-airbnb-base eslint-plugin-import eslint/create-config
 
 RUN mkdir /data
 

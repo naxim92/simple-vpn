@@ -11,7 +11,9 @@ services:
     command: >
       bash -c " \
       chmod +x test/pylint/script.sh && \
-      test/pylint/script.sh "
+      test/before_tests.sh && \
+      test/pylint/script.sh && \
+      test/eslint/script.sh"
 
   openssl:
     image: alpine/openssl
