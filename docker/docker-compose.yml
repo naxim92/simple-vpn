@@ -4,6 +4,6 @@ services:
     image: naxim/simple-vpn-builder
     container_name: simple_vpn_builder
     volumes:
-      - ${DATA_PATH}/:/simple-vpn/:rw
+      - ${DATA_PATH}:/simple-vpn:rw
       - /var/run/docker.sock:/var/run/docker.sock
     command: "install"
