@@ -14,6 +14,5 @@ jobs:
       
       - name: Start linter
         run: |
-          git diff --cached --name-only --diff-filter=ACM && \
-          DATA_PATH='../..' docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester pylint webui
+          DATA_PATH='../..' docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester
           
