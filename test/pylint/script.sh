@@ -1,12 +1,6 @@
 #!/bin/bash
 
 #git diff --cached --name-only --diff-filter=ACM | grep py | xargs pylint
-echo '>>>SCRIPT............................'
-ls -la
-git config --global safe.directory '*'
-git status
-git log --max-count=5
-echo '>>>SCRIPT.....PYCHANGES............................'
 
 PY_CHANGES=`git diff --name-only --diff-filter=ACM HEAD^ | grep '\.py'`
 
