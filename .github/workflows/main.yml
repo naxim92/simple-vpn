@@ -18,6 +18,6 @@ jobs:
       - name: Start linter
         run: |
           ls -la && \
-          DATA_PATH='../..' docker compose -p wireguard -f ./docker/docker-compose.yml run --rm simple_vpn_builder test
+          DATA_PATH='../..' docker compose -p wireguard -f ./docker/docker-compose.yml run --rm --entrypoint "bash -c 'chmod +x Makefile && make test'" simple_vpn_builder
           # DATA_PATH='../..' docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester
           
