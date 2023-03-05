@@ -10,9 +10,11 @@ services:
       - ${DATA_PATH}:/data
     command: >
       bash -c " \
-      chmod +x test/pylint/script.sh && \
+      chmod +x test/before_tests.sh && \
       test/before_tests.sh && \
+      chmod +x test/pylint/script.sh && \
       test/pylint/script.sh && \
+      chmod +x test/eslint/script.sh && \
       test/eslint/script.sh"
 
   openssl:
