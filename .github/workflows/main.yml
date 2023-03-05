@@ -11,11 +11,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        
-      - name: Prepare for tests
-        run: ls -la
       
       - name: Start linter
         run: |
-          docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester pylint webui
+          ls -la && \
+          DATA_PATH='../..' docker compose -p wireguard -f docker/dev/docker-compose.yml run --entrypoint ls --rm tester -la test/pylint && \
+          DATA_PATH='../..' docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester
           
