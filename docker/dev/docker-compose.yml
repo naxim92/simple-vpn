@@ -8,7 +8,10 @@ services:
       - PYLINTRC=/data/test/pylint/pylintrc
     volumes:
       - ${DATA_PATH}/:/data/
-    command: ["test/pylint/script.sh"]
+    command: >
+      bash -c " \
+      chmod +x test/pylint/script.sh && \
+      test/pylint/script.sh "
 
   openssl:
     image: alpine/openssl
