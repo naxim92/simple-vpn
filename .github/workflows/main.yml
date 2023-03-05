@@ -15,6 +15,6 @@ jobs:
       - name: Start linter
         run: |
           ls -la && \
-          DATA_PATH='../..' docker compose -p wireguard -f docker/dev/docker-compose.yml run --entrypoint ls --rm tester && \
+          DATA_PATH='../..' docker compose -p wireguard -f docker/dev/docker-compose.yml run --entrypoint ls --rm tester -la test/pylint && \
           DATA_PATH='../..' docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester
           
