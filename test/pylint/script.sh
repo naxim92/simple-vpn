@@ -2,6 +2,7 @@
 
 #git diff --cached --name-only --diff-filter=ACM | grep py | xargs pylint
 
+git config --global safe.directory '*'
 PY_CHANGES=`git diff --name-only --diff-filter=ACM HEAD^ | grep '\.py'`
 
 echo 'PY_CHANGES='$PY_CHANGES
