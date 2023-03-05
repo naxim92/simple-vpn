@@ -11,11 +11,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        
-      - name: Prepare for tests
-        run: ls -la
       
       - name: Start linter
         run: |
+          git diff --cached --name-only --diff-filter=ACM | grep '\.py'
           DATA_PATH='../..' docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester pylint webui
           
