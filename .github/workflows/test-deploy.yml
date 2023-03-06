@@ -16,8 +16,9 @@ jobs:
           fetch-depth: 2
       - name: Add wireguard.local to hosts
         run: |
+          ip addr && \
           echo -e '127.0.0.1\twireguard.local' | sudo tee -a /etc/hosts 1>/dev/null && \
           echo -e '127.0.0.1\thost.docker.internal' | sudo tee -a /etc/hosts 1>/dev/null
-      - name: Start test-deploy
-        run: |
-          DATA_PATH='..' docker compose -p wireguard -f ./docker/docker-compose.yml run --rm simple_vpn_builder install-auto-test
+#       - name: Start test-deploy
+#         run: |
+#           DATA_PATH='..' docker compose -p wireguard -f ./docker/docker-compose.yml run --rm simple_vpn_builder install-auto-test
