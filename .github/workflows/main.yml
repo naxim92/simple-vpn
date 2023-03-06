@@ -1,4 +1,4 @@
-name: Launch pylint
+name: Launch linters
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - cicd
 
 jobs:
-  test-py-code:
+  test-code:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -15,7 +15,8 @@ jobs:
           set-safe-directory: '*'
           fetch-depth: 2
       
-      - name: Start linter
+      - name: Start linters
         run: |
           DATA_PATH='..' docker compose -p wireguard -f ./docker/docker-compose.yml run --rm simple_vpn_builder test
+          
           
