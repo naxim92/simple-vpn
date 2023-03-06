@@ -144,8 +144,8 @@ deploy-dev: .EXPORT_ALL_VARIABLES
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml run --rm webuiapp pip install -r requirements.txt
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d webuiapp
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d balancer
-	@sleep 3
-	curl -s -L -k --header 'Host: $(WG_URL)' https://host.docker.internal/install | grep OK 
+	@sleep 5
+	curl -s -L -k --header 'Host: $(WG_URL)' https://host.docker.internal/install?force
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart webuiapp
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart balancer
 
