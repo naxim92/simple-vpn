@@ -181,14 +181,15 @@ test-eslint-f:
 install-auto-test: config_4 deploy-dev
 
 config_4:
+	$(eval WG_URL := 'wireguard.local')
 	$(eval NGINX_DOCKER_HOST_SUBNET := $(shell docker network inspect wireguard_default -f '{{(index .IPAM.Config 0).Subnet}}'))
 	@cp $(DEV_WEBUI_ENV_FILE).tpl $(DEV_WEBUI_ENV_FILE)
 	@sed -i 's~172\.17\.0\.0/16~$(NGINX_DOCKER_HOST_SUBNET)~' $(DEV_WEBUI_ENV_FILE)
-	@sed -i 's~$${nginx_host}~wireguard.local~' $(DEV_WEBUI_ENV_FILE)
+	@sed -i 's~$${nginx_host}~$(WG_URL)~' $(DEV_WEBUI_ENV_FILE)
 	@sed -i 's~$${email}~test@email~' $(DEV_WEBUI_ENV_FILE)
 	@cp $(DEV_WIREGUARD_ENV_FILE).tpl $(DEV_WIREGUARD_ENV_FILE)
-	@sed -i 's~$${nginx_host}~wireguard.local~' $(DEV_WIREGUARD_ENV_FILE)
+	@sed -i 's~$${nginx_host}~$(WG_URL)~' $(DEV_WIREGUARD_ENV_FILE)
 	@sed -i 's~$${wg_client_amount}~5~' $(DEV_WIREGUARD_ENV_FILE)
 	@cp $(DEV_ENV_FILE).tpl $(DEV_ENV_FILE)
-	@sed -i 's~%NGINX_HOST%~wireguard.local~' $(DEV_ENV_FILE)
+	@sed -i 's~%NGINX_HOST%~$(WG_URL)~' $(DEV_ENV_FILE)
 	
