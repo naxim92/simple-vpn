@@ -5,6 +5,7 @@ TFVARS_FILE :=  $(TF_DIR)/terraform.tfvars
 DEV_ENV_FILE := docker/dev/.env
 DEV_WEBUI_ENV_FILE := docker/webui/.env
 DEV_WIREGUARD_ENV_FILE := docker/wireguard/.env
+DEV_WEBUI_DB_FILE := webui/data/webui.db
 
 INSTALL_MSG := "Do you have valid DNS name linked with public ip?"
 DESTROY_MSG := "Are you sure to destroy Wireguard infrastructure?"
@@ -138,16 +139,23 @@ $(DEV_ENV_FILE):
 
 deploy-dev: .EXPORT_ALL_VARIABLES
 	@echo "Deploy on your machine...."
+ifeq (,$(wildcard $(DEV_WEBUI_DB_FILE)))
+	$(eval CLEAN_INSTALL := 'true')
+endif
+	@echo 'WEBDB: '$(wildcard $(DEV_WEBUI_DB_FILE))
+	@echo 'CLEAN: '$(CLEAN_INSTALL)
 	$(eval HOST_DATA_PATH := $(shell docker inspect $$HOSTNAME -f '{{json .HostConfig.Binds}}' | jq '.[] | select(. | contains("simple-vpn")) | split(":/simple-vpn")[0]'))
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm openssl
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/wireguard/docker-compose.yml up -d wireguard
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml run --rm webuiapp pip install -r requirements.txt
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d webuiapp
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d balancer
-	@sleep 3
-	curl -s -L -k --header 'Host: $(WG_URL)' https://host.docker.internal/install
-	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart webuiapp
-	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart balancer
+	$(if $(filter $(CLEAN_INSTALL),'true'), \
+		@DATA_PATH=$(HOST_DATA_PATH)  sleep 3 && \
+		curl -s -L -k --header 'Host: $(WG_URL)' https://host.docker.internal/install && \
+		docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart webuiapp && \
+		docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart balancer \
+	)
 
 .EXPORT_ALL_VARIABLES:
 
