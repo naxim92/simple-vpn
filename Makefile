@@ -145,7 +145,7 @@ deploy-dev: .EXPORT_ALL_VARIABLES
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d webuiapp
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d balancer
 	@sleep 3
-	@curl -s -L -k --header 'Host: $(WG_URL)' https://host.docker.internal/install | grep OK 
+	curl -s -L -k --header 'Host: $(WG_URL)' https://host.docker.internal/install | grep OK 
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart webuiapp
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart balancer
 
@@ -181,7 +181,7 @@ test-eslint-f:
 install-auto-test: config_4 deploy-dev
 
 config_4:
-	$(eval WG_URL := 'wireguard.local')
+	$(eval WG_URL := wireguard.local)
 	$(eval NGINX_DOCKER_HOST_SUBNET := $(shell docker network inspect wireguard_default -f '{{(index .IPAM.Config 0).Subnet}}'))
 	@cp $(DEV_WEBUI_ENV_FILE).tpl $(DEV_WEBUI_ENV_FILE)
 	@sed -i 's~172\.17\.0\.0/16~$(NGINX_DOCKER_HOST_SUBNET)~' $(DEV_WEBUI_ENV_FILE)
