@@ -1,0 +1,28 @@
+name: Launch linters manually
+
+on: workflow_dispatch
+
+jobs:
+  test-py-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          set-safe-directory: '*'
+          fetch-depth: 2
+      - name: Start pylint
+        run: |
+          DATA_PATH='..' docker compose -p wireguard -f ./docker/docker-compose.yml run --rm simple_vpn_builder test-pylint-f
+             
+  test-js-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          set-safe-directory: '*'
+          fetch-depth: 2
+      - name: Start eslint
+        run: |
+          DATA_PATH='..' docker compose -p wireguard -f ./docker/docker-compose.yml run --rm simple_vpn_builder test-eslint-f
