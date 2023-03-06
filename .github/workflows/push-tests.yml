@@ -35,4 +35,9 @@ jobs:
           echo -e $addr'\thost.docker.internal' | sudo tee -a /etc/hosts
       - name: Start test-deploy
         run: |
-          DATA_PATH='..' docker compose -p wireguard -f ./docker/docker-compose.yml run --rm simple_vpn_builder install-auto-test          
+          DATA_PATH='..' docker compose -p wireguard -f ./docker/docker-compose.yml run --rm simple_vpn_builder install-auto-test   
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: webui.db
+          path: webui/data/webui.db
