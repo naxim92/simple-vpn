@@ -26,7 +26,10 @@ services:
       - ${DATA_PATH}/:/data/
       - certbot:/data/private/ssl
       - /var/run/docker.sock:/var/run/docker.sock
-    entrypoint: ["/data/docker/dev/generate_selfsigned_cert.sh"]
+    entrypoint: |
+      sh -c " \
+      chmod +x /data/docker/dev/generate_selfsigned_cert.sh && \
+      /data/docker/dev/generate_selfsigned_cert.sh"
 
 volumes:
   certbot:
