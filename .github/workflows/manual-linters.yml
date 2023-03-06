@@ -1,4 +1,4 @@
-name: Launch linters manually
+name: launch-linters-manually
 
 on: workflow_dispatch
 
