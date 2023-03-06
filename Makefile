@@ -5,7 +5,6 @@ TFVARS_FILE :=  $(TF_DIR)/terraform.tfvars
 DEV_ENV_FILE := docker/dev/.env
 DEV_WEBUI_ENV_FILE := docker/webui/.env
 DEV_WIREGUARD_ENV_FILE := docker/wireguard/.env
-DEV_WEBUI_DB_FILE := webui/data/webui.db
 
 INSTALL_MSG := "Do you have valid DNS name linked with public ip?"
 DESTROY_MSG := "Are you sure to destroy Wireguard infrastructure?"
@@ -29,7 +28,7 @@ PRIVATE_KEY_FILE := "../private/manager_key.private"
 
 all: install
 
-.PHONY: help config config_1 config_2 build-builder install deploy-prod deploy-public-ip deploy-service destroy clean clean_all clean_dev install-dev deploy-dev destroy-dev test test-pylint
+.PHONY: help config config_1 config_2 build-builder install deploy-prod deploy-public-ip deploy-service destroy clean clean_all clean_dev install-dev deploy-dev destroy-dev test test-pylint config_4 install-auto-test
 help:
 	@echo "--------------------------------------------------------------------------------"
 	@echo "Use it for deploy, preparing environments, etc"
@@ -111,7 +110,7 @@ clean_all: confirmation
 	@rm -f $(TF_DIR)/terraform.tfstate.backup
 	@rm -f $(TFVARS_FILE)
 
-install-dev: config_3 $(DEV_WEBUI_ENV_FILE) $(DEV_WIREGUARD_ENV_FILE) $(DEV_ENV_FILE) deploy-dev $(DEV_WEBUI_DB_FILE)
+install-dev: config_3 $(DEV_WEBUI_ENV_FILE) $(DEV_WIREGUARD_ENV_FILE) $(DEV_ENV_FILE) deploy-dev
 
 config_3:
 	@echo "--------------------------------------------------------------------------------"
@@ -178,3 +177,18 @@ test-pylint-f:
 test-eslint-f:
 	$(eval HOST_DATA_PATH := $(shell docker inspect $$HOSTNAME -f '{{json .HostConfig.Binds}}' | jq '.[] | select(. | contains("simple-vpn")) | split(":/simple-vpn")[0]'))
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester npx eslint -c test/eslint/.eslintrc.yml webui/static/js/*.js
+
+install-auto-test: config_4 deploy-dev
+
+config_4:
+	$(eval NGINX_DOCKER_HOST_SUBNET := $(shell docker network inspect wireguard_default -f '{{(index .IPAM.Config 0).Subnet}}'))
+	@cp $(DEV_WEBUI_ENV_FILE).tpl $(DEV_WEBUI_ENV_FILE)
+	@sed -i 's~172\.17\.0\.0/16~$(NGINX_DOCKER_HOST_SUBNET)~' $(DEV_WEBUI_ENV_FILE)
+	@sed -i 's~$${nginx_host}~wireguard.local~' $(DEV_WEBUI_ENV_FILE)
+	@sed -i 's~$${email}~test@email~' $(DEV_WEBUI_ENV_FILE)
+	@cp $(DEV_WIREGUARD_ENV_FILE).tpl $(DEV_WIREGUARD_ENV_FILE)
+	@sed -i 's~$${nginx_host}~wireguard.local~' $(DEV_WIREGUARD_ENV_FILE)
+	@sed -i 's~$${wg_client_amount}~5~' $(DEV_WIREGUARD_ENV_FILE)
+	@cp $(DEV_ENV_FILE).tpl $(DEV_ENV_FILE)
+	@sed -i 's~%NGINX_HOST%~wireguard.local~' $(DEV_ENV_FILE)
+	
