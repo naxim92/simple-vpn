@@ -1,4 +1,4 @@
-name: Launch linters
+name: auto-launch-linters
 
 on:
   push:
