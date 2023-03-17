@@ -7,8 +7,15 @@ services:
     environment:
       - PYLINTRC=/data/test/pylint/pylintrc
     volumes:
-      - ${DATA_PATH}/:/data/
-    command: ["test/pylint/script.sh"]
+      - ${DATA_PATH}:/data
+    command: >
+      bash -c " \
+      chmod +x test/before_tests.sh && \
+      test/before_tests.sh && \
+      chmod +x test/pylint/script.sh && \
+      test/pylint/script.sh && \
+      chmod +x test/eslint/script.sh && \
+      test/eslint/script.sh"
 
   openssl:
     image: alpine/openssl
@@ -19,7 +26,10 @@ services:
       - ${DATA_PATH}/:/data/
       - certbot:/data/private/ssl
       - /var/run/docker.sock:/var/run/docker.sock
-    entrypoint: ["/data/docker/dev/generate_selfsigned_cert.sh"]
+    entrypoint: |
+      sh -c " \
+      chmod +x /data/docker/dev/generate_selfsigned_cert.sh && \
+      /data/docker/dev/generate_selfsigned_cert.sh"
 
 volumes:
   certbot:

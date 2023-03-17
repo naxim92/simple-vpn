@@ -29,7 +29,7 @@ PRIVATE_KEY_FILE := "../private/manager_key.private"
 
 all: install
 
-.PHONY: help config config_1 config_2 build-builder install deploy-prod deploy-public-ip deploy-service destroy clean clean_all clean_dev install-dev deploy-dev destroy-dev test test-pylint
+.PHONY: help config config_1 config_2 build-builder install deploy-prod deploy-public-ip deploy-service destroy clean clean_all clean_dev install-dev deploy-dev destroy-dev test test-pylint config_4 install-auto-test
 help:
 	@echo "--------------------------------------------------------------------------------"
 	@echo "Use it for deploy, preparing environments, etc"
@@ -111,7 +111,7 @@ clean_all: confirmation
 	@rm -f $(TF_DIR)/terraform.tfstate.backup
 	@rm -f $(TFVARS_FILE)
 
-install-dev: config_3 $(DEV_WEBUI_ENV_FILE) $(DEV_WIREGUARD_ENV_FILE) $(DEV_ENV_FILE) deploy-dev $(DEV_WEBUI_DB_FILE)
+install-dev: config_3 $(DEV_WEBUI_ENV_FILE) $(DEV_WIREGUARD_ENV_FILE) $(DEV_ENV_FILE) deploy-dev
 
 config_3:
 	@echo "--------------------------------------------------------------------------------"
@@ -139,16 +139,23 @@ $(DEV_ENV_FILE):
 
 deploy-dev: .EXPORT_ALL_VARIABLES
 	@echo "Deploy on your machine...."
+ifeq (,$(wildcard $(DEV_WEBUI_DB_FILE)))
+	$(eval CLEAN_INSTALL := 'true')
+endif
+	@echo 'WEBDB: '$(wildcard $(DEV_WEBUI_DB_FILE))
+	@echo 'CLEAN: '$(CLEAN_INSTALL)
 	$(eval HOST_DATA_PATH := $(shell docker inspect $$HOSTNAME -f '{{json .HostConfig.Binds}}' | jq '.[] | select(. | contains("simple-vpn")) | split(":/simple-vpn")[0]'))
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm openssl
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/wireguard/docker-compose.yml up -d wireguard
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml run --rm webuiapp pip install -r requirements.txt
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d webuiapp
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml up -d balancer
-	@sleep 3
-	@curl -s -L -k --header 'Host: $(WG_URL)' https://host.docker.internal/install | grep OK 
-	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart webuiapp
-	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart balancer
+	$(if $(filter $(CLEAN_INSTALL),'true'), \
+		@DATA_PATH=$(HOST_DATA_PATH)  sleep 3 && \
+		curl -s -L -k --header 'Host: $(WG_URL)' https://host.docker.internal/install && \
+		docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart webuiapp && \
+		docker compose -p wireguard -f docker/webui/docker-compose.yml -f docker/dev/dev-webui-docker-compose.yml restart balancer \
+	)
 
 .EXPORT_ALL_VARIABLES:
 
@@ -164,7 +171,35 @@ destroy-dev:
 	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/wireguard/docker-compose.yml down || true
 
 test: test-pylint
-	@docker compose -f docker/dev/docker-compose.yml run --rm tester
 
 test-pylint:
-	@docker compose -f docker/dev/docker-compose.yml run --rm tester pylint webui
+	$(eval HOST_DATA_PATH := $(shell docker inspect $$HOSTNAME -f '{{json .HostConfig.Binds}}' | jq '.[] | select(. | contains("simple-vpn")) | split(":/simple-vpn")[0]'))
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester
+
+test-full: test-pylint-f test-eslint-f
+
+test-pylint-f:
+	$(eval HOST_DATA_PATH := $(shell docker inspect $$HOSTNAME -f '{{json .HostConfig.Binds}}' | jq '.[] | select(. | contains("simple-vpn")) | split(":/simple-vpn")[0]'))
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester pylint webui
+
+test-eslint-f:
+	$(eval HOST_DATA_PATH := $(shell docker inspect $$HOSTNAME -f '{{json .HostConfig.Binds}}' | jq '.[] | select(. | contains("simple-vpn")) | split(":/simple-vpn")[0]'))
+	@DATA_PATH=$(HOST_DATA_PATH) docker compose -p wireguard -f docker/dev/docker-compose.yml run --rm tester npx eslint -c test/eslint/.eslintrc.yml webui/static/js/*.js
+
+install-auto-test: config_4 deploy-dev
+
+config_4:
+	$(eval WG_URL := wireguard.local)
+	$(eval NGINX_DOCKER_HOST_SUBNET := $(shell docker network inspect wireguard_default -f '{{(index .IPAM.Config 0).Subnet}}'))
+	ping -c 1 $(WG_URL)
+	ping -c 1 host.docker.internal
+	@cp $(DEV_WEBUI_ENV_FILE).tpl $(DEV_WEBUI_ENV_FILE)
+	@sed -i 's~172\.17\.0\.0/16~$(NGINX_DOCKER_HOST_SUBNET)~' $(DEV_WEBUI_ENV_FILE)
+	@sed -i 's~$${nginx_host}~$(WG_URL)~' $(DEV_WEBUI_ENV_FILE)
+	@sed -i 's~$${email}~test@email~' $(DEV_WEBUI_ENV_FILE)
+	@cp $(DEV_WIREGUARD_ENV_FILE).tpl $(DEV_WIREGUARD_ENV_FILE)
+	@sed -i 's~$${nginx_host}~$(WG_URL)~' $(DEV_WIREGUARD_ENV_FILE)
+	@sed -i 's~$${wg_client_amount}~5~' $(DEV_WIREGUARD_ENV_FILE)
+	@cp $(DEV_ENV_FILE).tpl $(DEV_ENV_FILE)
+	@sed -i 's~%NGINX_HOST%~$(WG_URL)~' $(DEV_ENV_FILE)
+	
