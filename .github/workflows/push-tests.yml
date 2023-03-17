@@ -2,8 +2,6 @@ name: tests
 
 on:
   push:
-    branches:
-      - cicd
 
 jobs:
   launch-linters:
